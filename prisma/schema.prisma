@@ -1,0 +1,265 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Better Auth tables (keep T3's @@map convention) ──────────────
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+
+  sessions        Session[]
+  accounts        Account[]
+  profile         Profile?
+  applications    Application[]
+  documents       Document[]
+  activities      Activity[]
+  chats           Chat[]
+  oauthApplications OauthApplication[]
+  oauthAccessTokens OauthAccessToken[]
+  oauthConsents     OauthConsent[]
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ─── Application domain ───────────────────────────────────────────
+
+enum ApplicationStatus {
+  RESEARCH
+  DRAFT
+  READY
+  APPLIED
+  INTERVIEW
+  OFFER
+  REJECTED
+  WITHDRAWN
+}
+
+enum ApplicationType {
+  INTERNAL
+  EXTERNAL
+}
+
+enum DocumentType {
+  CV
+  COVER_LETTER
+  ADDITIONAL
+}
+
+enum ActivityType {
+  STATUS_CHANGE
+  DOCUMENT_EDIT
+  NOTE
+  AI_INTERACTION
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String   @default("") @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Application {
+  id             String            @id @default(cuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company        String
+  role           String
+  status         ApplicationStatus @default(RESEARCH)
+  type           ApplicationType   @default(EXTERNAL)
+  jobDescription String?           @db.Text
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  metadata   ApplicationMeta[]
+  documents  Document[]
+  activities Activity[]
+
+  @@index([userId, status])
+  @@index([userId, company])
+}
+
+model ApplicationMeta {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  key           String
+  value         String      @db.Text
+  order         Int
+
+  @@index([applicationId])
+}
+
+model Document {
+  id             String       @id @default(cuid())
+  applicationId  String
+  application    Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type           DocumentType
+  name           String?
+  source         String       @db.Text
+  previousSource String?      @db.Text
+  yamlContent    String?      @db.Text
+  templateId     String?
+  pdfUrl         String?
+  extractedText  String?      @db.Text
+  isUploadedPdf  Boolean      @default(false)
+  chatHistory    Json         @default("[]")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([applicationId])
+  @@index([userId])
+}
+
+model Activity {
+  id            String       @id @default(cuid())
+  applicationId String
+  application   Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          ActivityType
+  description   String
+  metadata      Json?
+  createdAt     DateTime     @default(now())
+
+  @@index([applicationId, createdAt])
+}
+
+model Chat {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  messages  Json     @default("[]")
+  modelId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
+}
+
+// ─── Better Auth MCP / OAuth tables ──────────────────────────────
+
+model OauthApplication {
+  id           String             @id
+  name         String?
+  icon         String?
+  metadata     String?
+  clientId     String?
+  clientSecret String?
+  redirectUrls String?
+  type         String?
+  disabled     Boolean?           @default(false)
+  userId       String?
+  user         User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime?
+  updatedAt    DateTime?
+
+  oauthAccessTokens OauthAccessToken[]
+  oauthConsents     OauthConsent[]
+
+  @@unique([clientId])
+  @@index([userId])
+  @@map("oauthApplication")
+}
+
+model OauthAccessToken {
+  id                    String            @id
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  clientId              String?
+  oauthApplication      OauthApplication? @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  userId                String?
+  user                  User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scopes                String?
+  createdAt             DateTime?
+  updatedAt             DateTime?
+
+  @@unique([accessToken])
+  @@unique([refreshToken])
+  @@index([clientId])
+  @@index([userId])
+  @@map("oauthAccessToken")
+}
+
+model OauthConsent {
+  id               String            @id
+  clientId         String?
+  oauthApplication OauthApplication? @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+  userId           String?
+  user             User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scopes           String?
+  createdAt        DateTime?
+  updatedAt        DateTime?
+  consentGiven     Boolean?
+
+  @@index([clientId])
+  @@index([userId])
+  @@map("oauthConsent")
+}

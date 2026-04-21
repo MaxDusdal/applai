@@ -1,0 +1,68 @@
+name: "Your Name"
+title: "Your Degree | Your Role"
+address: "City, Country"
+email: "email@example.com"
+phone: "+49 123 456789"
+linkedin: "linkedin.com/in/yourprofile"
+github: "github.com/yourusername"
+
+education:
+  - degree: "B.Sc. Your Degree"
+    institution: "Your University"
+    date: "MM/YYYY - MM/YYYY"
+    bullets:
+      - "Specialization: Your Focus. Current grade: X.X."
+      - "Relevant Coursework: Course A, Course B, Course C"
+      - title: "Thesis Title:"
+        topic: "Your Thesis Topic"
+        subbullets:
+          - "Impact: Describe the measurable outcome of your thesis."
+          - "Methodology: Describe the approach or framework you used."
+  - degree: "Your Secondary Degree or School"
+    institution: "Your School"
+    date: "MM/YYYY - MM/YYYY"
+    bullets:
+      - "Advanced Courses: Subject A & Subject B. Average grade: X.X."
+
+experience:
+  - title: "Your Role"
+    company: "Company Name, City"
+    date: "MM/YYYY - Present"
+    bullets:
+      - "Describe a key achievement with measurable impact."
+      - "Describe another responsibility or outcome."
+      - "Describe a third contribution or result."
+  - title: "Your Role"
+    company: "Company Name"
+    date: "MM/YYYY - MM/YYYY"
+    bullets:
+      - "Describe what you built, improved, or delivered."
+  - title: "Your Role"
+    company: "Company or Project Name"
+    date: "MM/YYYY - MM/YYYY"
+    bullets:
+      - "Describe scope, scale, or outcome."
+      - "Describe a specific technical or business achievement."
+      - "Describe infrastructure, process, or product impact."
+
+skills:
+  - category: "Programming Languages & Frameworks"
+    items: ["Language A", "Language B", "Framework A", "Framework B"]
+  - category: "Databases & Cloud Platforms"
+    items: ["DB A", "DB B", "Cloud A", "Tool A"]
+  - category: "Tools & Methods"
+    items: ["Tool A", "Method A", "Method B"]
+
+volunteering:
+  - title: "Your Volunteer Role"
+    desc: "Describe what you did, who you helped, and any measurable outcome."
+  - title: "Your Volunteer Role"
+    desc: "Describe the project, your contribution, and any recognition received."
+
+languages:
+  - name: "Language A"
+    proficiency: "Native"
+  - name: "Language B"
+    proficiency: "Fluent – C1"
+
+interests: ["Interest A", "Interest B", "Interest C"]

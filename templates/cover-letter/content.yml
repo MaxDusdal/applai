@@ -1,0 +1,24 @@
+sender:
+  name: "Your Name"
+  address: "Street Address"
+  city: "City, Country"
+  email: "email@example.com"
+  phone: "+49 123 456789"
+
+recipient:
+  name: "Hiring Manager Name"
+  company: "Company Name"
+  address: "Company Address"
+
+role: "Role Title"
+
+opening: "I am writing to express my interest in the [Role Title] position at [Company]. Having followed your work in [relevant area], I am excited by the opportunity to contribute to your team."
+
+body:
+  - "Paragraph 2 — highlight relevant professional experience and achievements with specific metrics."
+  - "Paragraph 3 — mention personal projects or additional qualifications that set you apart."
+  - "Paragraph 4 — bridge paragraph connecting your experience to the specific needs of the role."
+
+closing: "I would welcome the opportunity to discuss how my background aligns with your needs. I am available at your convenience and look forward to hearing from you."
+
+salutation: "Sincerely"
