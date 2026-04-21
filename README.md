@@ -1,29 +1,53 @@
-# Create T3 App
+# Applai
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+An agentic job application assistant that makes application tracking and document creation faster through a learning AI agent — usable both inside the app and externally via MCP.
 
-## What's next? How do I make an app with this?
+## What it does
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- **Application tracking** — manage your job applications across all stages
+- **Document creation** — generate and edit CVs and cover letters using [Typst](https://typst.app/) templates
+- **AI agent** — a context-aware agent that learns your profile, writing style, and preferences over time
+- **MCP server** — expose the agent as an MCP tool so it can be used from Claude, Cursor, or any MCP-compatible client outside the app
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Tech stack
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- [Next.js 15](https://nextjs.org) — app framework
+- [tRPC](https://trpc.io) — end-to-end typesafe API
+- [Prisma](https://prisma.io) — database ORM
+- [better-auth](https://better-auth.com) — authentication
+- [Vercel AI SDK](https://sdk.vercel.ai) — AI integration
+- [Model Context Protocol](https://modelcontextprotocol.io) — external agent access
+- [Typst](https://typst.app) — document compilation
 
-## Learn More
+## Getting started
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+### Prerequisites
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+- Node.js 20+
+- pnpm
+- PostgreSQL database
+- Anthropic API key
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+### Setup
 
-## How do I deploy this?
+```bash
+# Install dependencies
+pnpm install
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+# Copy environment variables
+cp .env.example .env
+
+# Fill in your .env, then run migrations
+pnpm db:generate
+
+# Start the dev server
+pnpm dev
+```
+
+### MCP usage
+
+Applai exposes an MCP server at `/api/mcp`. You can connect any MCP-compatible client to it and interact with your applications, profile, and documents directly from your editor or AI assistant.
+
+## Status
+
+Early-stage prototype — core features are working, rough edges remain.

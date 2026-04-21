@@ -12,8 +12,8 @@ const geistHeading = Geist({subsets:['latin'],variable:'--font-heading'});
 const dmSans = DM_Sans({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: "Apply AI",
-  description: "AI-assisted job application management",
+  title: "Applai",
+  description: "Agentic job application tracking and document creation",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
