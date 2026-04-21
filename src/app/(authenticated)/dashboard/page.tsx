@@ -7,10 +7,12 @@ import { NewApplicationDialog } from "@/components/applications/new-application-
 import { Button } from "@/components/ui/button";
 import { Plus, Briefcase } from "lucide-react";
 import { usePageContext } from "@/components/agent/agent-provider";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function DashboardPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const applications = api.application.list.useQuery();
+  const isMobile = useIsMobile();
 
   usePageContext({ page: "dashboard" });
 
@@ -27,6 +29,42 @@ export default function DashboardPage() {
 
   const hasApplications = (applications.data?.length ?? 0) > 0;
 
+  // On desktop, the sidebar shows the application list — show a welcome state here
+  if (!isMobile) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+        <div className="bg-muted flex h-16 w-16 items-center justify-center rounded-full">
+          <Briefcase className="text-muted-foreground h-8 w-8" />
+        </div>
+        <div className="space-y-1">
+          <p className="font-medium">
+            {hasApplications
+              ? "Select an application"
+              : "No applications yet"}
+          </p>
+          <p className="text-muted-foreground text-sm">
+            {hasApplications
+              ? "Choose an application from the sidebar to view its details."
+              : "Create your first application to get started."}
+          </p>
+        </div>
+        {!hasApplications && (
+          <>
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Application
+            </Button>
+            <NewApplicationDialog
+              open={dialogOpen}
+              onOpenChange={setDialogOpen}
+            />
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // On mobile, show the full application list
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex items-center justify-between">

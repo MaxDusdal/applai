@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AuthenticatedHeader } from "@/components/authenticated-header";
 import { getSession } from "@/server/better-auth/server";
 import { AgentProvider } from "@/components/agent/agent-provider";
 import { AgentPanel } from "@/components/agent/agent-panel";
-import { AgentToggle } from "@/components/agent/agent-toggle";
 
 export default async function AuthenticatedLayout({
   children,
@@ -17,18 +16,24 @@ export default async function AuthenticatedLayout({
     redirect("/");
   }
 
+  const user = {
+    name: session.user.name,
+    email: session.user.email,
+    image: session.user.image ?? null,
+  };
+
   return (
-    <SidebarProvider>
-      <AppSidebar />
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "21rem",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar user={user} />
       <AgentProvider>
         <main className="flex flex-1 flex-col overflow-hidden">
-          <header className="flex shrink-0 items-center gap-2 border-b px-4 py-2">
-            <SidebarTrigger />
-            <div className="ml-auto flex items-center gap-1">
-              <AgentToggle />
-              <ThemeToggle />
-            </div>
-          </header>
+          <AuthenticatedHeader />
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <div className="flex flex-1 flex-col overflow-hidden">{children}</div>
             <AgentPanel />
