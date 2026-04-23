@@ -106,7 +106,12 @@ export function CreateDocumentDialog({
 
   function handleCreate() {
     if (!templateId || !name.trim()) return;
-    createMutation.mutate({ applicationId, type: docType, name: name.trim(), templateId });
+    createMutation.mutate({
+      applicationId,
+      type: docType,
+      name: name.trim(),
+      templateId,
+    });
   }
 
   function handleUpload() {
@@ -151,7 +156,7 @@ export function CreateDocumentDialog({
           <div className="grid grid-cols-2 gap-3 py-2">
             <button
               onClick={() => setMode("template")}
-              className="flex flex-col items-center gap-3 rounded-xl border p-5 text-left transition-colors hover:bg-muted/50 focus:outline-none focus-visible:ring-2"
+              className="hover:bg-muted/50 flex flex-col items-center gap-3 rounded-xl border p-5 text-left transition-colors focus:outline-none focus-visible:ring-2"
             >
               <div className="bg-muted flex h-10 w-10 items-center justify-center rounded-lg">
                 <FileText className="text-muted-foreground h-5 w-5" />
@@ -165,7 +170,7 @@ export function CreateDocumentDialog({
             </button>
             <button
               onClick={() => setMode("upload")}
-              className="flex flex-col items-center gap-3 rounded-xl border p-5 text-left transition-colors hover:bg-muted/50 focus:outline-none focus-visible:ring-2"
+              className="hover:bg-muted/50 flex flex-col items-center gap-3 rounded-xl border p-5 text-left transition-colors focus:outline-none focus-visible:ring-2"
             >
               <div className="bg-muted flex h-10 w-10 items-center justify-center rounded-lg">
                 <Upload className="text-muted-foreground h-5 w-5" />
@@ -184,7 +189,10 @@ export function CreateDocumentDialog({
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium">Type</label>
-              <Select value={docType} onValueChange={(v) => handleTypeChange(v! as DocType)}>
+              <Select
+                value={docType}
+                onValueChange={(v) => handleTypeChange(v! as DocType)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -207,7 +215,10 @@ export function CreateDocumentDialog({
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium">Template</label>
-              <Select value={templateId} onValueChange={(v) => setTemplateId(v ?? "")}>
+              <Select
+                value={templateId}
+                onValueChange={(v) => setTemplateId(v ?? "")}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a template" />
                 </SelectTrigger>
@@ -231,7 +242,11 @@ export function CreateDocumentDialog({
               )}
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setMode("choose")}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMode("choose")}
+              >
                 Back
               </Button>
               <Button
@@ -248,7 +263,10 @@ export function CreateDocumentDialog({
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium">Type</label>
-              <Select value={docType} onValueChange={(v) => handleTypeChange(v! as DocType)}>
+              <Select
+                value={docType}
+                onValueChange={(v) => handleTypeChange(v! as DocType)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -274,7 +292,9 @@ export function CreateDocumentDialog({
               {selectedFile ? (
                 <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
                   <File className="text-muted-foreground h-4 w-4 shrink-0" />
-                  <span className="min-w-0 flex-1 truncate text-sm">{selectedFile.name}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm">
+                    {selectedFile.name}
+                  </span>
                   <button
                     onClick={() => setSelectedFile(null)}
                     className="text-muted-foreground hover:text-foreground"
@@ -284,7 +304,10 @@ export function CreateDocumentDialog({
                 </div>
               ) : (
                 <div
-                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
                   onDragLeave={() => setIsDragging(false)}
                   onDrop={(e) => {
                     e.preventDefault();
@@ -294,7 +317,9 @@ export function CreateDocumentDialog({
                   }}
                   onClick={() => fileInputRef.current?.click()}
                   className={`flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors ${
-                    isDragging ? "border-primary bg-primary/5" : "border-border hover:bg-muted/40"
+                    isDragging
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:bg-muted/40"
                   }`}
                 >
                   <Upload className="text-muted-foreground h-6 w-6" />
@@ -314,7 +339,11 @@ export function CreateDocumentDialog({
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setMode("choose")}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setMode("choose")}
+              >
                 Back
               </Button>
               <Button

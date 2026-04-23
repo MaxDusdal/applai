@@ -3,7 +3,9 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { ApplicationService } from "@/server/services/application";
 import { generateObject } from "ai";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
+const pdfParse = require("pdf-parse") as (
+  buf: Buffer,
+) => Promise<{ text: string }>;
 
 const applicationStatusValues = [
   "RESEARCH",
@@ -113,7 +115,11 @@ export const applicationRouter = createTRPCRouter({
     .input(z.object({ id: z.string(), applicationId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const service = new ApplicationService(ctx.db);
-      return service.deleteMeta(ctx.session.user.id, input.id, input.applicationId);
+      return service.deleteMeta(
+        ctx.session.user.id,
+        input.id,
+        input.applicationId,
+      );
     }),
 
   createWithMeta: protectedProcedure
@@ -135,14 +141,16 @@ export const applicationRouter = createTRPCRouter({
 
   parseJobDescription: protectedProcedure
     .input(
-      z.object({
-        text: z.string().optional(),
-        url: z.string().url().optional(),
-        pdfBase64: z.string().optional(),
-      }).refine(
-        (d) => d.text ?? d.url ?? d.pdfBase64,
-        "Provide text, url, or pdfBase64",
-      ),
+      z
+        .object({
+          text: z.string().optional(),
+          url: z.string().url().optional(),
+          pdfBase64: z.string().optional(),
+        })
+        .refine(
+          (d) => d.text ?? d.url ?? d.pdfBase64,
+          "Provide text, url, or pdfBase64",
+        ),
     )
     .mutation(async ({ input }) => {
       let jobText: string;
@@ -207,11 +215,17 @@ Instructions:
               z.object({
                 key: z
                   .string()
-                  .describe("Field name (e.g., Location, Career Level, Salary, Contract Type)"),
-                value: z.string().describe("Field value as stated in the posting"),
+                  .describe(
+                    "Field name (e.g., Location, Career Level, Salary, Contract Type)",
+                  ),
+                value: z
+                  .string()
+                  .describe("Field value as stated in the posting"),
               }),
             )
-            .describe("Explicitly stated details as key-value pairs — only include what the posting actually says"),
+            .describe(
+              "Explicitly stated details as key-value pairs — only include what the posting actually says",
+            ),
         }),
         maxOutputTokens: 4096,
       });

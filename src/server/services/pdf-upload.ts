@@ -1,7 +1,9 @@
 import { put, del, get } from "@vercel/blob";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
+const pdfParse = require("pdf-parse") as (
+  buf: Buffer,
+) => Promise<{ text: string }>;
 
 export class PdfUploadService {
   async upload(

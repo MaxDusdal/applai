@@ -1,6 +1,13 @@
 "use client";
 
-import { X, Plus, MessageSquare, History, ArrowLeft, Trash2 } from "lucide-react";
+import {
+  X,
+  Plus,
+  MessageSquare,
+  History,
+  ArrowLeft,
+  Trash2,
+} from "lucide-react";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -40,9 +47,9 @@ function ChatTab({
     >
       <span className="truncate">{title}</span>
       {/* Fade mask + close button — absolute overlay, only visible on hover */}
-      <span className="pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-end rounded-r-md bg-gradient-to-r from-transparent to-muted opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
+      <span className="to-muted pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-end rounded-r-md bg-gradient-to-r from-transparent opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
         <button
-          className="mr-1 flex h-5 w-5 items-center justify-center rounded-full bg-muted/60 text-muted-foreground hover:text-foreground"
+          className="bg-muted/60 text-muted-foreground hover:text-foreground mr-1 flex h-5 w-5 items-center justify-center rounded-full"
           onClick={(e) => {
             e.stopPropagation();
             onClose(chatId);
@@ -100,13 +107,20 @@ function ChatHistoryPanel({ onClose }: { onClose: () => void }) {
     },
   });
 
-  const chatToDelete = deletingId ? chats.find((c) => c.id === deletingId) : null;
+  const chatToDelete = deletingId
+    ? chats.find((c) => c.id === deletingId)
+    : null;
 
   return (
     <>
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex shrink-0 items-center gap-2 border-b px-3 py-2">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={onClose}
+          >
             <ArrowLeft className="h-3.5 w-3.5" />
           </Button>
           <span className="text-sm font-medium">Recent chats</span>
@@ -114,7 +128,7 @@ function ChatHistoryPanel({ onClose }: { onClose: () => void }) {
 
         <div className="flex-1 overflow-y-auto">
           {chats.length === 0 ? (
-            <div className="px-4 py-8 text-center text-xs text-muted-foreground">
+            <div className="text-muted-foreground px-4 py-8 text-center text-xs">
               No chats yet
             </div>
           ) : (
@@ -122,7 +136,10 @@ function ChatHistoryPanel({ onClose }: { onClose: () => void }) {
               {chats.map((chat) => {
                 const snippet = lastMessageSnippet(chat.messages);
                 return (
-                  <li key={chat.id} className="flex items-center gap-2 px-3 py-2.5 hover:bg-muted/40">
+                  <li
+                    key={chat.id}
+                    className="hover:bg-muted/40 flex items-center gap-2 px-3 py-2.5"
+                  >
                     <button
                       className="flex min-w-0 flex-1 flex-col gap-0.5 text-left"
                       onClick={() => {
@@ -130,13 +147,17 @@ function ChatHistoryPanel({ onClose }: { onClose: () => void }) {
                         onClose();
                       }}
                     >
-                      <span className="truncate text-sm">{chat.title ?? "New chat"}</span>
+                      <span className="truncate text-sm">
+                        {chat.title ?? "New chat"}
+                      </span>
                       {snippet && (
-                        <span className="truncate text-xs text-muted-foreground">{snippet}</span>
+                        <span className="text-muted-foreground truncate text-xs">
+                          {snippet}
+                        </span>
                       )}
                     </button>
                     <button
-                      className="shrink-0 rounded p-0.5 text-muted-foreground/50 hover:text-destructive"
+                      className="text-muted-foreground/50 hover:text-destructive shrink-0 rounded p-0.5"
                       onClick={() => setDeletingId(chat.id)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -159,8 +180,9 @@ function ChatHistoryPanel({ onClose }: { onClose: () => void }) {
           <DialogHeader>
             <DialogTitle>Delete chat?</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            &ldquo;{chatToDelete?.title ?? "New chat"}&rdquo; will be permanently deleted.
+          <p className="text-muted-foreground text-sm">
+            &ldquo;{chatToDelete?.title ?? "New chat"}&rdquo; will be
+            permanently deleted.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeletingId(null)}>
@@ -242,7 +264,12 @@ export function AgentPanel() {
           >
             <History className="h-3.5 w-3.5" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={closeAgent}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={closeAgent}
+          >
             <X className="h-3.5 w-3.5" />
           </Button>
         </div>
@@ -258,7 +285,9 @@ export function AgentPanel() {
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium">No chats yet</p>
-            <p className="text-muted-foreground text-xs">Start a new chat to get going.</p>
+            <p className="text-muted-foreground text-xs">
+              Start a new chat to get going.
+            </p>
           </div>
           <Button size="sm" onClick={() => void newChat()}>
             <Plus className="mr-1.5 h-3.5 w-3.5" />

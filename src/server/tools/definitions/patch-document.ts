@@ -39,7 +39,10 @@ export const patchDocument = defineTool({
     })
     .refine((d) => d.documentId ?? d.type, "Provide documentId or type"),
   needsApproval: true,
-  execute: async ({ applicationId, documentId, type, target, patches }, ctx) => {
+  execute: async (
+    { applicationId, documentId, type, target, patches },
+    ctx,
+  ) => {
     let doc;
     if (documentId) {
       doc = await ctx.db.document.findFirst({
@@ -53,7 +56,9 @@ export const patchDocument = defineTool({
     }
 
     if (!doc) {
-      return { error: "Document not found. Provide a valid documentId or type." };
+      return {
+        error: "Document not found. Provide a valid documentId or type.",
+      };
     }
 
     if (doc.isUploadedPdf) {

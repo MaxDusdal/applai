@@ -14,7 +14,8 @@ export function toAiSdkTools(
       description: def.description,
       inputSchema: def.inputSchema,
       ...(def.needsApproval ? { needsApproval: true } : {}),
-      execute: async (input: Record<string, unknown>) => def.execute(input, ctx),
+      execute: async (input: Record<string, unknown>) =>
+        def.execute(input, ctx),
     });
     /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */
   }

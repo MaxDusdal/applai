@@ -1,64 +1,291 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
+
+import { NavUser } from "@/components/nav-user";
+import { StatusBadge } from "@/components/applications/status-badge";
+import { NewApplicationDialog } from "@/components/applications/new-application-dialog";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarInput,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, User, FileText, Settings } from "lucide-react";
-import { authClient } from "@/server/better-auth/client";
+import {
+  LayoutDashboardIcon,
+  UserIcon,
+  FileTextIcon,
+  SettingsIcon,
+  SparklesIcon,
+  PlusIcon,
+} from "lucide-react";
+import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { title: "Applications", href: "/dashboard", icon: LayoutDashboard },
-  { title: "Profile", href: "/profile", icon: User },
-  { title: "Templates", href: "/templates", icon: FileText },
-  { title: "Settings", href: "/settings", icon: Settings },
+  {
+    title: "Applications",
+    href: "/dashboard",
+    icon: LayoutDashboardIcon,
+    matchPrefixes: ["/dashboard", "/applications"],
+  },
+  {
+    title: "Profile",
+    href: "/profile",
+    icon: UserIcon,
+    matchPrefixes: ["/profile"],
+  },
+  {
+    title: "Templates",
+    href: "/templates",
+    icon: FileTextIcon,
+    matchPrefixes: ["/templates"],
+  },
+  {
+    title: "Settings",
+    href: "/settings",
+    icon: SettingsIcon,
+    matchPrefixes: ["/settings"],
+  },
 ];
 
-export function AppSidebar() {
+function formatRelativeDate(date: Date): string {
+  const now = new Date();
+  const diff = now.getTime() - new Date(date).getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days}d ago`;
+  if (days < 30) return `${Math.floor(days / 7)}w ago`;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(new Date(date));
+}
+
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+  user: {
+    name: string;
+    email: string;
+    image: string | null;
+  };
+};
+
+export function AppSidebar({ user, ...props }: AppSidebarProps) {
   const pathname = usePathname();
+  const params = useParams();
+  const { setOpen } = useSidebar();
+  const [search, setSearch] = React.useState("");
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+
+  const activeNav =
+    navItems.find((item) =>
+      item.matchPrefixes.some((prefix) => pathname.startsWith(prefix)),
+    ) ?? navItems[0]!;
+
+  const showApplicationsPanel = activeNav.title === "Applications";
+
+  // Auto-collapse sidebar on non-application pages (no second panel to show)
+  React.useEffect(() => {
+    if (!showApplicationsPanel) {
+      setOpen(false);
+    }
+  }, [showApplicationsPanel, setOpen]);
+
+  const activeApplicationId = params.id as string | undefined;
 
   return (
-    <Sidebar>
-      <SidebarHeader className="p-4">
-        <h1 className="text-lg font-semibold">Apply AI</h1>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+    <Sidebar
+      collapsible="icon"
+      className="overflow-hidden *:data-[sidebar=sidebar]:flex-row"
+      {...props}
+    >
+      {/* First sidebar — icon rail */}
+      <Sidebar
+        collapsible="none"
+        className="!w-[calc(var(--sidebar-width-icon)+1px)] border-r"
+      >
+        <SidebarHeader>
           <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  render={<Link href={item.href} />}
-                  isActive={pathname.startsWith(item.href)}
-                >
-                  <item.icon className="mr-2 h-4 w-4" />
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                size="lg"
+                className="md:h-8 md:p-0"
+                render={<Link href="/dashboard" />}
+              >
+                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                  <SparklesIcon className="size-4" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">Applai</span>
+                </div>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter className="p-4">
-        <Button
-          variant="ghost"
-          className="w-full justify-start"
-          onClick={() => void authClient.signOut()}
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent className="px-1.5 md:px-0">
+              <SidebarMenu>
+                {navItems.map((item) => {
+                  const isActive = item.title === activeNav.title;
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        tooltip={item.title}
+                        render={<Link href={item.href} />}
+                        onClick={() => setOpen(true)}
+                        isActive={isActive}
+                        className="px-2.5 md:px-2"
+                      >
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <NavUser user={user} />
+        </SidebarFooter>
+      </Sidebar>
+
+      {/* Second sidebar — applications list panel (desktop only, only on applications route) */}
+      {showApplicationsPanel && (
+        <Sidebar
+          collapsible="none"
+          className="hidden !w-auto flex-1 overflow-hidden md:flex"
         >
-          Sign Out
-        </Button>
-      </SidebarFooter>
+          <SidebarHeader className="gap-3.5 border-b p-4">
+            <div className="flex w-full items-center justify-between">
+              <div className="text-foreground text-base font-medium">
+                Applications
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setDialogOpen(true)}
+              >
+                <PlusIcon className="size-4" />
+                <span className="sr-only">New Application</span>
+              </Button>
+            </div>
+            <SidebarInput
+              placeholder="Search applications..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarGroup className="px-0">
+              <SidebarGroupContent>
+                <ApplicationListPanel
+                  search={search}
+                  activeApplicationId={activeApplicationId}
+                />
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+          <NewApplicationDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+          />
+        </Sidebar>
+      )}
     </Sidebar>
+  );
+}
+
+function ApplicationListPanel({
+  search,
+  activeApplicationId,
+}: {
+  search: string;
+  activeApplicationId?: string;
+}) {
+  const applications = api.application.list.useQuery();
+
+  if (applications.isLoading) {
+    return (
+      <div className="space-y-2 p-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="animate-pulse space-y-1.5">
+            <div className="bg-muted h-4 w-3/4 rounded" />
+            <div className="bg-muted h-3 w-1/2 rounded" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const data = applications.data ?? [];
+  const filtered = search
+    ? data.filter(
+        (app) =>
+          app.company.toLowerCase().includes(search.toLowerCase()) ||
+          app.role.toLowerCase().includes(search.toLowerCase()),
+      )
+    : data;
+
+  if (filtered.length === 0) {
+    return (
+      <div className="text-muted-foreground px-4 py-8 text-center text-sm">
+        {search ? "No results found." : "No applications yet."}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {filtered.map((app) => {
+        const isActive = app.id === activeApplicationId;
+        const initials = app.company
+          .split(" ")
+          .slice(0, 2)
+          .map((w) => w[0])
+          .join("")
+          .toUpperCase();
+
+        return (
+          <Link
+            href={`/applications/${app.id}`}
+            key={app.id}
+            className={`hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-start gap-3 overflow-hidden border-b p-4 text-sm leading-tight last:border-b-0 ${
+              isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
+            }`}
+          >
+            <div className="bg-muted text-muted-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold">
+              {initials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate font-medium">{app.company}</span>
+                <span className="text-muted-foreground shrink-0 text-xs">
+                  {formatRelativeDate(app.updatedAt)}
+                </span>
+              </div>
+              <span className="text-muted-foreground block truncate text-xs">
+                {app.role}
+              </span>
+              <div className="mt-1.5">
+                <StatusBadge status={app.status} />
+              </div>
+            </div>
+          </Link>
+        );
+      })}
+    </>
   );
 }

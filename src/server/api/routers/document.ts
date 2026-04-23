@@ -25,7 +25,10 @@ export const documentRouter = createTRPCRouter({
     .input(z.object({ applicationId: z.string() }))
     .query(async ({ ctx, input }) => {
       const service = new DocumentService(ctx.db);
-      return service.listByApplication(ctx.session.user.id, input.applicationId);
+      return service.listByApplication(
+        ctx.session.user.id,
+        input.applicationId,
+      );
     }),
 
   update: protectedProcedure
@@ -78,13 +81,17 @@ export const documentRouter = createTRPCRouter({
       ]);
 
       const docService = new DocumentService(ctx.db);
-      const doc = await docService.create(ctx.session.user.id, input.applicationId, {
-        type: input.type,
-        name: input.name,
-        source,
-        yamlContent,
-        templateId: input.templateId,
-      });
+      const doc = await docService.create(
+        ctx.session.user.id,
+        input.applicationId,
+        {
+          type: input.type,
+          name: input.name,
+          source,
+          yamlContent,
+          templateId: input.templateId,
+        },
+      );
       return doc;
     }),
 
@@ -135,10 +142,15 @@ export const documentRouter = createTRPCRouter({
       if (!document) throw new TRPCError({ code: "NOT_FOUND" });
 
       if (document.isUploadedPdf) {
-        if (!document.pdfUrl) throw new TRPCError({ code: "NOT_FOUND", message: "No PDF stored." });
+        if (!document.pdfUrl)
+          throw new TRPCError({ code: "NOT_FOUND", message: "No PDF stored." });
         const pdfService = new PdfUploadService();
         const res = await pdfService.stream(document.pdfUrl);
-        if (!res.ok) throw new TRPCError({ code: "NOT_FOUND", message: "Failed to retrieve PDF." });
+        if (!res.ok)
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Failed to retrieve PDF.",
+          });
         const buf = Buffer.from(await res.arrayBuffer());
         return buf.toString("base64");
       }
@@ -155,7 +167,10 @@ export const documentRouter = createTRPCRouter({
     .input(z.object({ source: z.string(), yamlContent: z.string().optional() }))
     .mutation(async ({ input }) => {
       const compilationService = new CompilationService();
-      const pdf = await compilationService.compile(input.source, input.yamlContent);
+      const pdf = await compilationService.compile(
+        input.source,
+        input.yamlContent,
+      );
       return pdf.toString("base64");
     }),
 });

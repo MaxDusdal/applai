@@ -7,9 +7,9 @@ import { TRPCReactProvider } from "@/trpc/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
-const geistHeading = Geist({subsets:['latin'],variable:'--font-heading'});
+const geistHeading = Geist({ subsets: ["latin"], variable: "--font-heading" });
 
-const dmSans = DM_Sans({subsets:['latin'],variable:'--font-sans'});
+const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: "Applai",
@@ -26,7 +26,15 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={cn(geist.variable, "font-sans", dmSans.variable, geistHeading.variable)}>
+    <html
+      lang="en"
+      className={cn(
+        geist.variable,
+        "font-sans",
+        dmSans.variable,
+        geistHeading.variable,
+      )}
+    >
       <body>
         <TRPCReactProvider>
           <ThemeProvider>{children}</ThemeProvider>

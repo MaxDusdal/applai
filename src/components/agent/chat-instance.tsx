@@ -1,7 +1,13 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, isToolUIPart, getToolName, type UIMessage } from "ai";import { useAgent, AGENT_MODELS } from "@/components/agent/agent-provider";
+import {
+  DefaultChatTransport,
+  isToolUIPart,
+  getToolName,
+  type UIMessage,
+} from "ai";
+import { useAgent, AGENT_MODELS } from "@/components/agent/agent-provider";
 import { api } from "@/trpc/react";
 
 import {
@@ -103,7 +109,8 @@ function ChatInstanceInner({
         (p) =>
           p.type.startsWith("tool-") &&
           (p as { state?: string }).state === "approval-responded" &&
-          (p as { approval?: { approved?: boolean } }).approval?.approved === true,
+          (p as { approval?: { approved?: boolean } }).approval?.approved ===
+            true,
       );
     },
   });
@@ -124,15 +131,20 @@ function ChatInstanceInner({
                 <div className="space-y-1">
                   <p className="text-sm font-medium">AI Agent</p>
                   <p className="text-muted-foreground text-xs">
-                    I can help you manage your profile, applications, and documents.
+                    I can help you manage your profile, applications, and
+                    documents.
                   </p>
                 </div>
                 <div className="bg-muted/60 mt-2 rounded-lg px-3 py-2 text-left text-xs">
                   <p className="mb-1 font-medium">Try:</p>
-                  <ul className="space-y-0.5 text-muted-foreground">
+                  <ul className="text-muted-foreground space-y-0.5">
                     <li>&bull; &quot;What&apos;s in my profile?&quot;</li>
-                    <li>&bull; &quot;Set the Google application to Applied&quot;</li>
-                    <li>&bull; &quot;Generate a CV for my Stripe application&quot;</li>
+                    <li>
+                      &bull; &quot;Set the Google application to Applied&quot;
+                    </li>
+                    <li>
+                      &bull; &quot;Generate a CV for my Stripe application&quot;
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -145,7 +157,9 @@ function ChatInstanceInner({
                 {message.parts.map((part, i) => {
                   if (part.type === "text") {
                     if (!part.text.trim()) return null;
-                    return <MessageResponse key={i}>{part.text}</MessageResponse>;
+                    return (
+                      <MessageResponse key={i}>{part.text}</MessageResponse>
+                    );
                   }
 
                   if (isToolUIPart(part)) {
@@ -187,10 +201,14 @@ function ChatInstanceInner({
                               </ConfirmationActions>
                             </ConfirmationRequest>
                             <ConfirmationAccepted>
-                              <span className="text-xs text-muted-foreground">Approved</span>
+                              <span className="text-muted-foreground text-xs">
+                                Approved
+                              </span>
                             </ConfirmationAccepted>
                             <ConfirmationRejected>
-                              <span className="text-xs text-muted-foreground">Denied</span>
+                              <span className="text-muted-foreground text-xs">
+                                Denied
+                              </span>
                             </ConfirmationRejected>
                           </Confirmation>
                         </div>
@@ -198,13 +216,17 @@ function ChatInstanceInner({
                     }
 
                     return (
-                      <div key={part.toolCallId} className="flex items-center gap-1.5 text-xs text-muted-foreground py-0.5">
-                        {part.state === "input-streaming" || part.state === "input-available" ? (
-                          <Loader2 className="h-3 w-3 animate-spin shrink-0" />
+                      <div
+                        key={part.toolCallId}
+                        className="text-muted-foreground flex items-center gap-1.5 py-0.5 text-xs"
+                      >
+                        {part.state === "input-streaming" ||
+                        part.state === "input-available" ? (
+                          <Loader2 className="h-3 w-3 shrink-0 animate-spin" />
                         ) : part.state === "output-error" ? (
-                          <XCircle className="h-3 w-3 shrink-0 text-destructive" />
+                          <XCircle className="text-destructive h-3 w-3 shrink-0" />
                         ) : (
-                          <CheckCircle2 className="h-3 w-3 shrink-0 text-muted-foreground/60" />
+                          <CheckCircle2 className="text-muted-foreground/60 h-3 w-3 shrink-0" />
                         )}
                         <WrenchIcon className="h-3 w-3 shrink-0" />
                         <span>{toolLabel(toolName)}</span>
@@ -236,7 +258,7 @@ function ChatInstanceInner({
           />
           <PromptInputFooter>
             <ModelSelector>
-              <ModelSelectorTrigger className="flex items-center gap-1.5 rounded px-1.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <ModelSelectorTrigger className="text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-1.5 rounded px-1.5 py-1 text-xs transition-colors">
                 <ModelSelectorLogo provider="anthropic" className="size-3" />
                 {AGENT_MODELS.find((m) => m.id === modelId)?.label ?? "Model"}
               </ModelSelectorTrigger>
@@ -251,10 +273,14 @@ function ChatInstanceInner({
                         value={m.id}
                         onSelect={() => handleModelChange(m.id)}
                       >
-                        <ModelSelectorLogo provider={m.provider.toLowerCase()} />
+                        <ModelSelectorLogo
+                          provider={m.provider.toLowerCase()}
+                        />
                         <ModelSelectorName>{m.label}</ModelSelectorName>
                         {m.id === modelId && (
-                          <span className="text-xs text-muted-foreground">active</span>
+                          <span className="text-muted-foreground text-xs">
+                            active
+                          </span>
                         )}
                       </ModelSelectorItem>
                     ))}

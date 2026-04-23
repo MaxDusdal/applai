@@ -12,7 +12,11 @@ export class ApplicationService {
       orderBy: { updatedAt: "desc" },
       include: {
         documents: { select: { type: true, name: true } },
-        metadata: { select: { key: true, value: true }, orderBy: { order: "asc" }, take: 6 },
+        metadata: {
+          select: { key: true, value: true },
+          orderBy: { order: "asc" },
+          take: 6,
+        },
       },
     });
   }
@@ -95,7 +99,9 @@ export class ApplicationService {
     value: string,
     order: number,
   ) {
-    const app = await this.db.application.findFirst({ where: { id: applicationId, userId } });
+    const app = await this.db.application.findFirst({
+      where: { id: applicationId, userId },
+    });
     if (!app) throw new Error("Not found");
 
     return this.db.applicationMeta.create({
@@ -111,7 +117,9 @@ export class ApplicationService {
     key: string,
     value: string,
   ) {
-    const app = await this.db.application.findFirst({ where: { id: applicationId, userId } });
+    const app = await this.db.application.findFirst({
+      where: { id: applicationId, userId },
+    });
     if (!app) throw new Error("Not found");
 
     return this.db.applicationMeta.updateMany({
@@ -121,7 +129,9 @@ export class ApplicationService {
   }
 
   async deleteMeta(userId: string, metaId: string, applicationId: string) {
-    const app = await this.db.application.findFirst({ where: { id: applicationId, userId } });
+    const app = await this.db.application.findFirst({
+      where: { id: applicationId, userId },
+    });
     if (!app) throw new Error("Not found");
 
     return this.db.applicationMeta.deleteMany({

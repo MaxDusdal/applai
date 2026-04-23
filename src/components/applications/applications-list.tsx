@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Application, ApplicationStatus, ApplicationMeta, Document } from "@prisma/client";
+import type { Application, ApplicationStatus } from "@prisma/client";
 import { APPLICATION_STATUS_OPTIONS } from "@/components/applications/status-badge";
 import { cn } from "@/lib/utils";
-import { FileText, BookOpen, CheckCircle2, Circle, MapPin, DollarSign, Calendar } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle2,
+  Circle,
+  MapPin,
+  DollarSign,
+} from "lucide-react";
 
 type ApplicationWithRelations = Application & {
   documents: { type: string }[];
@@ -48,12 +54,20 @@ function formatRelativeDate(date: Date): string {
   if (days === 1) return "Yesterday";
   if (days < 7) return `${days}d ago`;
   if (days < 30) return `${Math.floor(days / 7)}w ago`;
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(date));
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(new Date(date));
 }
 
-function getMetaValue(metadata: { key: string; value: string }[], keys: string[]): string | undefined {
+function getMetaValue(
+  metadata: { key: string; value: string }[],
+  keys: string[],
+): string | undefined {
   const lowerKeys = keys.map((k) => k.toLowerCase());
-  const found = metadata.find((m) => lowerKeys.some((k) => m.key.toLowerCase().includes(k)));
+  const found = metadata.find((m) =>
+    lowerKeys.some((k) => m.key.toLowerCase().includes(k)),
+  );
   return found?.value;
 }
 
@@ -70,7 +84,7 @@ function ProgressBar({ status }: { status: ApplicationStatus }) {
         const isFuture = isTerminal || i > stageIdx;
 
         return (
-          <div key={stage} className="flex items-center gap-0.5 flex-1 min-w-0">
+          <div key={stage} className="flex min-w-0 flex-1 items-center gap-0.5">
             {/* Segment */}
             <div
               title={STAGE_LABELS[stage]}
@@ -99,11 +113,13 @@ function StageLabels({ status }: { status: ApplicationStatus }) {
       {PIPELINE_STAGES.map((stage, i) => {
         const isDone = !isTerminal && i <= stageIdx;
         return (
-          <div key={stage} className="flex-1 min-w-0">
+          <div key={stage} className="min-w-0 flex-1">
             <span
               className={cn(
-                "text-[10px] font-medium truncate block",
-                isDone ? "text-green-600 dark:text-green-400" : "text-muted-foreground/50",
+                "block truncate text-[10px] font-medium",
+                isDone
+                  ? "text-green-600 dark:text-green-400"
+                  : "text-muted-foreground/50",
                 i === stageIdx && "text-foreground/70",
               )}
             >
@@ -118,7 +134,12 @@ function StageLabels({ status }: { status: ApplicationStatus }) {
 
 function ChecklistItem({ done, label }: { done: boolean; label: string }) {
   return (
-    <div className={cn("flex items-center gap-1.5 text-xs", done ? "text-green-600 dark:text-green-400" : "text-muted-foreground")}>
+    <div
+      className={cn(
+        "flex items-center gap-1.5 text-xs",
+        done ? "text-green-600 dark:text-green-400" : "text-muted-foreground",
+      )}
+    >
       {done ? (
         <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
       ) : (
@@ -141,11 +162,17 @@ function StatusPill({ status }: { status: ApplicationStatus }) {
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
-        isRejected && "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+        isRejected &&
+          "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
         isWithdrawn && "bg-muted text-muted-foreground",
-        isOffer && "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-        isInterview && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-        !isRejected && !isWithdrawn && !isOffer && !isInterview &&
+        isOffer &&
+          "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+        isInterview &&
+          "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+        !isRejected &&
+          !isWithdrawn &&
+          !isOffer &&
+          !isInterview &&
           "bg-muted text-muted-foreground",
       )}
     >
@@ -162,7 +189,11 @@ function ApplicationCard({ app }: { app: ApplicationWithRelations }) {
 
   const location = getMetaValue(app.metadata, ["location", "city", "remote"]);
   const salary = getMetaValue(app.metadata, ["salary", "compensation", "pay"]);
-  const department = getMetaValue(app.metadata, ["department", "team", "division"]);
+  const department = getMetaValue(app.metadata, [
+    "department",
+    "team",
+    "division",
+  ]);
 
   const initials = app.company
     .split(" ")
@@ -174,45 +205,47 @@ function ApplicationCard({ app }: { app: ApplicationWithRelations }) {
   return (
     <div
       onClick={() => router.push(`/applications/${app.id}`)}
-      className="group bg-card border rounded-2xl p-5 cursor-pointer hover:border-ring/50 hover:shadow-sm transition-all duration-150"
+      className="group bg-card hover:border-ring/50 cursor-pointer rounded-2xl border p-5 transition-all duration-150 hover:shadow-sm"
     >
       <div className="flex items-start gap-4">
         {/* Logo / initials */}
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-sm font-semibold text-muted-foreground select-none">
+        <div className="bg-muted text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-semibold select-none">
           {initials}
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           {/* Header row */}
-          <div className="flex items-start justify-between gap-2 mb-0.5">
+          <div className="mb-0.5 flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <span className="font-semibold leading-tight">{app.company}</span>
+              <span className="leading-tight font-semibold">{app.company}</span>
               <span className="text-muted-foreground mx-1.5">·</span>
               <span className="text-muted-foreground text-sm">{app.role}</span>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex shrink-0 items-center gap-2">
               <StatusPill status={app.status} />
-              <span className="text-muted-foreground text-xs">{formatRelativeDate(app.updatedAt)}</span>
+              <span className="text-muted-foreground text-xs">
+                {formatRelativeDate(app.updatedAt)}
+              </span>
             </div>
           </div>
 
           {/* Meta pills */}
           {(location ?? salary ?? department) && (
-            <div className="flex items-center gap-3 mb-3 mt-1">
+            <div className="mt-1 mb-3 flex items-center gap-3">
               {location && (
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <span className="text-muted-foreground flex items-center gap-1 text-xs">
                   <MapPin className="h-3 w-3" />
                   {location}
                 </span>
               )}
               {salary && (
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <span className="text-muted-foreground flex items-center gap-1 text-xs">
                   <DollarSign className="h-3 w-3" />
                   {salary}
                 </span>
               )}
               {department && (
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <span className="text-muted-foreground flex items-center gap-1 text-xs">
                   <BookOpen className="h-3 w-3" />
                   {department}
                 </span>
@@ -253,7 +286,7 @@ export function ApplicationsList({ data }: ApplicationsListProps) {
   return (
     <div className="flex flex-col gap-4">
       {/* Filter pills */}
-      <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex flex-wrap items-center gap-1.5">
         {ALL_FILTERS.map((opt) => (
           <button
             key={opt.value}
@@ -276,7 +309,9 @@ export function ApplicationsList({ data }: ApplicationsListProps) {
       {/* Cards */}
       <div className="flex flex-col gap-3">
         {filtered.length === 0 ? (
-          <p className="text-muted-foreground text-sm py-8 text-center">No applications found.</p>
+          <p className="text-muted-foreground py-8 text-center text-sm">
+            No applications found.
+          </p>
         ) : (
           filtered.map((app) => <ApplicationCard key={app.id} app={app} />)
         )}

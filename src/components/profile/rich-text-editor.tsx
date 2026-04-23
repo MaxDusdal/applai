@@ -2,12 +2,27 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Table, TableRow, TableCell, TableHeader } from "@tiptap/extension-table";
+import {
+  Table,
+  TableRow,
+  TableCell,
+  TableHeader,
+} from "@tiptap/extension-table";
 import { Markdown } from "tiptap-markdown";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Bold, Italic, Heading2, Heading3, List, ListOrdered, Check, Loader2, Table as TableIcon } from "lucide-react";
+import {
+  Bold,
+  Italic,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  Check,
+  Loader2,
+  Table as TableIcon,
+} from "lucide-react";
 
 type RichTextEditorProps = {
   initialContent: string; // markdown
@@ -39,8 +54,15 @@ function useRelativeTime(date: Date | null) {
   return date.toLocaleDateString();
 }
 
-export function RichTextEditor({ initialContent, onSave, isSaving, savedAt }: RichTextEditorProps) {
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+export function RichTextEditor({
+  initialContent,
+  onSave,
+  isSaving,
+  savedAt,
+}: RichTextEditorProps) {
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const relativeTime = useRelativeTime(savedAt ?? null);
 
   const editor = useEditor({
@@ -57,7 +79,9 @@ export function RichTextEditor({ initialContent, onSave, isSaving, savedAt }: Ri
     onUpdate: ({ editor }) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        const storage = editor.storage as unknown as { markdown: { getMarkdown: () => string } };
+        const storage = editor.storage as unknown as {
+          markdown: { getMarkdown: () => string };
+        };
         const markdown = storage.markdown.getMarkdown();
         onSave(markdown);
       }, 500);
@@ -102,19 +126,27 @@ export function RichTextEditor({ initialContent, onSave, isSaving, savedAt }: Ri
         </Button>
         <Separator orientation="vertical" className="mx-1 h-6" />
         <Button
-          variant={editor.isActive("heading", { level: 2 }) ? "secondary" : "ghost"}
+          variant={
+            editor.isActive("heading", { level: 2 }) ? "secondary" : "ghost"
+          }
           size="icon"
           className="h-8 w-8"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
           type="button"
         >
           <Heading2 className="h-4 w-4" />
         </Button>
         <Button
-          variant={editor.isActive("heading", { level: 3 }) ? "secondary" : "ghost"}
+          variant={
+            editor.isActive("heading", { level: 3 }) ? "secondary" : "ghost"
+          }
           size="icon"
           className="h-8 w-8"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
           type="button"
         >
           <Heading3 className="h-4 w-4" />
@@ -146,7 +178,11 @@ export function RichTextEditor({ initialContent, onSave, isSaving, savedAt }: Ri
           onClick={() =>
             editor.isActive("table")
               ? editor.chain().focus().deleteTable().run()
-              : editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+              : editor
+                  .chain()
+                  .focus()
+                  .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                  .run()
           }
           type="button"
           title={editor.isActive("table") ? "Delete table" : "Insert table"}

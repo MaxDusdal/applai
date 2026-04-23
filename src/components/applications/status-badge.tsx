@@ -3,7 +3,10 @@ import type { ApplicationStatus } from "@prisma/client";
 
 const statusConfig: Record<
   ApplicationStatus,
-  { label: string; variant: "default" | "secondary" | "outline" | "destructive" | "ghost" }
+  {
+    label: string;
+    variant: "default" | "secondary" | "outline" | "destructive" | "ghost";
+  }
 > = {
   RESEARCH: { label: "Research", variant: "secondary" },
   DRAFT: { label: "Draft", variant: "outline" },
@@ -20,11 +23,17 @@ type StatusBadgeProps = {
 };
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const config = statusConfig[status] ?? { label: status, variant: "secondary" as const };
+  const config = statusConfig[status] ?? {
+    label: status,
+    variant: "secondary" as const,
+  };
   return <Badge variant={config.variant}>{config.label}</Badge>;
 }
 
-export const APPLICATION_STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
+export const APPLICATION_STATUS_OPTIONS: {
+  value: ApplicationStatus;
+  label: string;
+}[] = [
   { value: "RESEARCH", label: "Research" },
   { value: "DRAFT", label: "Draft" },
   { value: "READY", label: "Ready" },
