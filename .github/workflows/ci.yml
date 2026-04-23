@@ -10,6 +10,8 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    env:
+      SKIP_ENV_VALIDATION: true
     steps:
       - uses: actions/checkout@v4
 
@@ -38,7 +40,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/applai
+      SKIP_ENV_VALIDATION: true
     steps:
       - uses: actions/checkout@v4
 
