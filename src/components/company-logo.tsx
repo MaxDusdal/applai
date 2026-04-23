@@ -54,7 +54,7 @@ export function CompanyLogo({
         style={wrapperStyle}
         className={cn(
           wrapperClass,
-          "text-xs font-semibold text-muted-foreground",
+          "text-muted-foreground text-xs font-semibold",
         )}
       >
         {initials}

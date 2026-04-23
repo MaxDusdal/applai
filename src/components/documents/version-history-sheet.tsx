@@ -24,7 +24,11 @@ import type { VersionTrigger } from "@prisma/client";
 
 const TRIGGER_CONFIG: Record<
   VersionTrigger,
-  { label: string; icon: typeof Clock; variant: "default" | "secondary" | "outline" }
+  {
+    label: string;
+    icon: typeof Clock;
+    variant: "default" | "secondary" | "outline";
+  }
 > = {
   MANUAL: { label: "Manual", icon: Save, variant: "secondary" },
   AI_EDIT: { label: "AI Edit", icon: Bot, variant: "default" },
@@ -103,13 +107,13 @@ export function VersionHistorySheet({
                 No versions saved yet.
               </p>
             ) : (
-              <ol className="relative ml-2 space-y-3 border-l border-border pl-4">
+              <ol className="border-border relative ml-2 space-y-3 border-l pl-4">
                 {data.versions.map((v) => {
                   const config = TRIGGER_CONFIG[v.trigger];
                   const Icon = config.icon;
                   return (
                     <li key={v.id} className="relative">
-                      <div className="absolute -left-[21px] mt-2 h-3 w-3 rounded-full border border-border bg-muted" />
+                      <div className="border-border bg-muted absolute -left-[21px] mt-2 h-3 w-3 rounded-full border" />
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
@@ -117,7 +121,10 @@ export function VersionHistorySheet({
                               v{v.version}
                             </span>
                             <Badge variant={config.variant}>
-                              <Icon className="mr-0.5 h-3 w-3" data-icon="inline-start" />
+                              <Icon
+                                className="mr-0.5 h-3 w-3"
+                                data-icon="inline-start"
+                              />
                               {config.label}
                             </Badge>
                           </div>
@@ -164,10 +171,7 @@ export function VersionHistorySheet({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setRestoreTarget(null)}
-            >
+            <Button variant="outline" onClick={() => setRestoreTarget(null)}>
               Cancel
             </Button>
             <Button

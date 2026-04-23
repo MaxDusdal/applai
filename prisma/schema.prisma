@@ -196,7 +196,7 @@ model DocumentVersion {
   label       String?
   createdAt   DateTime       @default(now())
 
-  @@index([documentId, version])
+  @@unique([documentId, version])
   @@index([documentId, createdAt])
 }
 

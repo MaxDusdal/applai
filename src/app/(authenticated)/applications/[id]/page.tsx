@@ -247,7 +247,11 @@ export default function ApplicationDetailPage({
         {/* Nav skeleton */}
         <div className="flex shrink-0 gap-4 border-b px-6 py-2.5">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-muted h-4 animate-pulse rounded" style={{ width: `${[60, 92, 56, 76][i]}px` }} />
+            <div
+              key={i}
+              className="bg-muted h-4 animate-pulse rounded"
+              style={{ width: `${[60, 92, 56, 76][i]}px` }}
+            />
           ))}
         </div>
 
@@ -264,7 +268,7 @@ export default function ApplicationDetailPage({
             ))}
           </div>
 
-          <hr className="-mx-6 border-border" />
+          <hr className="border-border -mx-6" />
 
           {/* Job description */}
           <div className="space-y-3">
@@ -275,12 +279,12 @@ export default function ApplicationDetailPage({
             <div className="bg-muted h-40 animate-pulse rounded-xl" />
           </div>
 
-          <hr className="-mx-6 border-border" />
+          <hr className="border-border -mx-6" />
 
           {/* Activity */}
           <div className="space-y-4">
             <div className="bg-muted h-4 w-16 animate-pulse rounded" />
-            <div className="ml-2 space-y-4 border-l border-border pl-4">
+            <div className="border-border ml-2 space-y-4 border-l pl-4">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="space-y-1.5">
                   <div className="bg-muted h-3 w-2/3 animate-pulse rounded" />
@@ -290,7 +294,7 @@ export default function ApplicationDetailPage({
             </div>
           </div>
 
-          <hr className="-mx-6 border-border" />
+          <hr className="border-border -mx-6" />
 
           {/* Documents */}
           <div className="space-y-4">
@@ -303,7 +307,10 @@ export default function ApplicationDetailPage({
             </div>
             <div className="-mx-6 border-y">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4 border-b px-6 py-3 last:border-0">
+                <div
+                  key={i}
+                  className="flex items-center gap-4 border-b px-6 py-3 last:border-0"
+                >
                   <div className="bg-muted h-4 flex-1 animate-pulse rounded" />
                   <div className="bg-muted h-5 w-20 animate-pulse rounded-full" />
                   <div className="bg-muted h-3 w-16 animate-pulse rounded" />

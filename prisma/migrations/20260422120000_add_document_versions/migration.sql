@@ -16,7 +16,7 @@ CREATE TABLE "DocumentVersion" (
 );
 
 -- CreateIndex
-CREATE INDEX "DocumentVersion_documentId_version_idx" ON "DocumentVersion"("documentId", "version");
+CREATE UNIQUE INDEX "DocumentVersion_documentId_version_idx" ON "DocumentVersion"("documentId", "version");
 
 -- CreateIndex
 CREATE INDEX "DocumentVersion_documentId_createdAt_idx" ON "DocumentVersion"("documentId", "createdAt");
@@ -25,6 +25,8 @@ CREATE INDEX "DocumentVersion_documentId_createdAt_idx" ON "DocumentVersion"("do
 ALTER TABLE "DocumentVersion" ADD CONSTRAINT "DocumentVersion_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- MigrateData: copy previousSource into DocumentVersion before dropping
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 INSERT INTO "DocumentVersion" ("id", "documentId", "version", "source", "yamlContent", "trigger", "label", "createdAt")
 SELECT
   gen_random_uuid()::text,

@@ -73,13 +73,13 @@ export async function resolveCompanyDomain(
   company: string,
   aiExtractedDomain?: string | null,
 ): Promise<string | null> {
-  const fromSearch = await brandSearch(company);
-  if (fromSearch) return fromSearch;
-
   if (aiExtractedDomain) {
     const fromAi = normalizeDomain(aiExtractedDomain);
     if (fromAi) return fromAi;
   }
+
+  const fromSearch = await brandSearch(company);
+  if (fromSearch) return fromSearch;
 
   return slugifyCompany(company);
 }

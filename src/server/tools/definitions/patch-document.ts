@@ -88,11 +88,16 @@ export const patchDocument = defineTool({
     }
 
     const service = new DocumentService(ctx.db);
-    await service.update(ctx.userId, doc.id, {
-      ...(target === "yamlContent"
-        ? { yamlContent: patched }
-        : { source: patched }),
-    }, { trigger: "AI_EDIT", versionLabel: "Before AI edit" });
+    await service.update(
+      ctx.userId,
+      doc.id,
+      {
+        ...(target === "yamlContent"
+          ? { yamlContent: patched }
+          : { source: patched }),
+      },
+      { trigger: "AI_EDIT", versionLabel: "Before AI edit" },
+    );
 
     return { success: true, documentId: doc.id };
   },

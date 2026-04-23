@@ -153,17 +153,31 @@ export const documentRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const versionService = new DocumentVersionService(ctx.db);
-      return versionService.listVersions(ctx.session.user.id, input.documentId, {
-        limit: input.limit,
-        cursor: input.cursor,
-      });
+      try {
+        return await versionService.listVersions(
+          ctx.session.user.id,
+          input.documentId,
+          {
+            limit: input.limit,
+            cursor: input.cursor,
+          },
+        );
+      } catch (error) {
+        if (error instanceof Error && error.message === "Not found") {
+          throw new TRPCError({ code: "NOT_FOUND" });
+        }
+        throw error;
+      }
     }),
 
   getVersion: protectedProcedure
     .input(z.object({ versionId: z.string() }))
     .query(async ({ ctx, input }) => {
       const versionService = new DocumentVersionService(ctx.db);
-      const version = await versionService.getVersion(ctx.session.user.id, input.versionId);
+      const version = await versionService.getVersion(
+        ctx.session.user.id,
+        input.versionId,
+      );
       if (!version) throw new TRPCError({ code: "NOT_FOUND" });
       return version;
     }),
@@ -177,10 +191,16 @@ export const documentRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const docService = new DocumentService(ctx.db);
-      const doc = await docService.getById(ctx.session.user.id, input.documentId);
+      const doc = await docService.getById(
+        ctx.session.user.id,
+        input.documentId,
+      );
       if (!doc) throw new TRPCError({ code: "NOT_FOUND" });
       if (doc.isUploadedPdf) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot version uploaded PDFs." });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cannot version uploaded PDFs.",
+        });
       }
 
       const versionService = new DocumentVersionService(ctx.db);
@@ -196,7 +216,26 @@ export const documentRouter = createTRPCRouter({
     .input(z.object({ versionId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const versionService = new DocumentVersionService(ctx.db);
-      return versionService.restoreVersion(ctx.session.user.id, input.versionId);
+      try {
+        return await versionService.restoreVersion(
+          ctx.session.user.id,
+          input.versionId,
+        );
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        if (error instanceof Error) {
+          if (error.message === "Not found") {
+            throw new TRPCError({ code: "NOT_FOUND" });
+          }
+          if (error.message.includes("cannot be edited")) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: error.message,
+            });
+          }
+        }
+        throw error;
+      }
     }),
 
   compile: protectedProcedure

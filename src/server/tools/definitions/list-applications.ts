@@ -4,7 +4,8 @@ import { defineTool } from "../types";
 
 export const listApplications = defineTool({
   name: "listApplications",
-  description: "List all of the user's job applications with their status, metadata, and document summaries",
+  description:
+    "List all of the user's job applications with their status, metadata, and document summaries",
   inputSchema: z.object({}),
   execute: async (_input, ctx) => {
     const service = new ApplicationService(ctx.db);

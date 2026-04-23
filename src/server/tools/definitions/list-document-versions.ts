@@ -8,17 +8,19 @@ export const listDocumentVersions = defineTool({
     "List version history for a document. Returns versions with timestamps, triggers, and labels. Use to review what changes were made and when.",
   inputSchema: z
     .object({
-      applicationId: z
-        .string()
-        .describe("The application ID"),
+      applicationId: z.string().describe("The application ID"),
       documentId: z
         .string()
         .optional()
-        .describe("Specific document ID (preferred when multiple docs of the same type exist)"),
+        .describe(
+          "Specific document ID (preferred when multiple docs of the same type exist)",
+        ),
       type: z
         .enum(["CV", "COVER_LETTER", "ADDITIONAL"])
         .optional()
-        .describe("Document type (used to find the document if documentId not provided)"),
+        .describe(
+          "Document type (used to find the document if documentId not provided)",
+        ),
       limit: z
         .number()
         .int()

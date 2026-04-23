@@ -17,6 +17,10 @@ export const restoreDocumentVersion = defineTool({
     if (!version) return { error: "Version not found." };
 
     const doc = await versionService.restoreVersion(ctx.userId, versionId);
-    return { success: true, documentId: doc.id, restoredToVersion: version.version };
+    return {
+      success: true,
+      documentId: doc.id,
+      restoredToVersion: version.version,
+    };
   },
 });

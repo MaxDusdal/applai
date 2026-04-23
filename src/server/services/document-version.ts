@@ -75,9 +75,11 @@ export class DocumentVersionService {
       where: { id: versionId },
       include: { document: { select: { userId: true } } },
     });
-    if (!version?.document.userId || version.document.userId !== userId) return null;
+    if (!version?.document.userId || version.document.userId !== userId)
+      return null;
 
-    const { document: _, ...rest } = version;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { document: _doc, ...rest } = version;
     return rest;
   }
 
@@ -86,7 +88,13 @@ export class DocumentVersionService {
       where: { id: versionId },
       include: {
         document: {
-          select: { id: true, userId: true, source: true, yamlContent: true, isUploadedPdf: true },
+          select: {
+            id: true,
+            userId: true,
+            source: true,
+            yamlContent: true,
+            isUploadedPdf: true,
+          },
         },
       },
     });
@@ -99,26 +107,35 @@ export class DocumentVersionService {
 
     const doc = version.document;
 
-    // Snapshot current state before restoring
-    if (doc.source || doc.yamlContent) {
-      await this.createVersion(doc.id, {
-        source: doc.source,
-        yamlContent: doc.yamlContent,
-        trigger: "RESTORE",
-        label: `Before restoring to version ${version.version}`,
+    return this.db.$transaction(async (tx) => {
+      // Snapshot current state before restoring
+      if (doc.source || doc.yamlContent) {
+        const latest = await tx.documentVersion.findFirst({
+          where: { documentId: doc.id },
+          orderBy: { version: "desc" },
+          select: { version: true },
+        });
+        await tx.documentVersion.create({
+          data: {
+            documentId: doc.id,
+            version: (latest?.version ?? 0) + 1,
+            source: doc.source,
+            yamlContent: doc.yamlContent,
+            trigger: "RESTORE",
+            label: `Before restoring to version ${version.version}`,
+          },
+        });
+      }
+
+      // Update document to restored content
+      return tx.document.update({
+        where: { id: doc.id },
+        data: {
+          source: version.source,
+          yamlContent: version.yamlContent,
+        },
       });
-    }
-
-    // Update document to restored content
-    const updated = await this.db.document.update({
-      where: { id: doc.id },
-      data: {
-        source: version.source,
-        yamlContent: version.yamlContent,
-      },
     });
-
-    return updated;
   }
 
   async shouldAutoSnapshot(documentId: string): Promise<boolean> {
