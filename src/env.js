@@ -8,12 +8,16 @@ export const env = createEnv({
    */
   server: {
     BETTER_AUTH_SECRET:
-      process.env.NODE_ENV === "production" ? z.string() : z.string().optional(),
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
     BETTER_AUTH_URL: z.string().url().optional(),
     DATABASE_URL: z.string().url(),
     ANTHROPIC_API_KEY: z.string().optional(),
     BLOB_READ_WRITE_TOKEN:
-      process.env.NODE_ENV === "production" ? z.string() : z.string().optional(),
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
     LOGO_DEV_SECRET_KEY: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])

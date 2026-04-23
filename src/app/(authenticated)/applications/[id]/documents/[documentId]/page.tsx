@@ -115,7 +115,10 @@ export default function DocumentEditorPage({
       const app = application.data;
       const name = doc.name ?? DOC_TYPE_LABELS[doc.type];
       a.download = app
-        ? `${app.company}_${app.role}_${name}.pdf`.replace(/[^a-zA-Z0-9_.-]/g, "_")
+        ? `${app.company}_${app.role}_${name}.pdf`.replace(
+            /[^a-zA-Z0-9_.-]/g,
+            "_",
+          )
         : `${name}.pdf`;
       window.document.body.appendChild(a);
       a.click();
@@ -127,7 +130,9 @@ export default function DocumentEditorPage({
       { id: doc.id },
       {
         onSuccess: (base64Pdf) => {
-          const bytes = Uint8Array.from(atob(base64Pdf), (c) => c.charCodeAt(0));
+          const bytes = Uint8Array.from(atob(base64Pdf), (c) =>
+            c.charCodeAt(0),
+          );
           const blob = new Blob([bytes], { type: "application/pdf" });
           const url = URL.createObjectURL(blob);
           const a = window.document.createElement("a");
@@ -135,7 +140,10 @@ export default function DocumentEditorPage({
           const name = doc.name ?? DOC_TYPE_LABELS[doc.type];
           a.href = url;
           a.download = app
-            ? `${app.company}_${app.role}_${name}.pdf`.replace(/[^a-zA-Z0-9_.-]/g, "_")
+            ? `${app.company}_${app.role}_${name}.pdf`.replace(
+                /[^a-zA-Z0-9_.-]/g,
+                "_",
+              )
             : `${name}.pdf`;
           window.document.body.appendChild(a);
           a.click();
@@ -148,7 +156,7 @@ export default function DocumentEditorPage({
 
   if (application.isLoading || document.isLoading) {
     return (
-      <div className="animate-pulse flex-1 p-6">
+      <div className="flex-1 animate-pulse p-6">
         <div className="bg-muted mb-4 h-8 w-48 rounded" />
         <div className="bg-muted h-64 rounded" />
       </div>
@@ -190,9 +198,13 @@ export default function DocumentEditorPage({
         </Button>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 text-sm">
-            <span className="truncate font-semibold">{app?.company ?? "Application"}</span>
+            <span className="truncate font-semibold">
+              {app?.company ?? "Application"}
+            </span>
             <span className="text-muted-foreground">&middot;</span>
-            <span className="text-muted-foreground truncate">{app?.role ?? ""}</span>
+            <span className="text-muted-foreground truncate">
+              {app?.role ?? ""}
+            </span>
           </div>
           <p className="text-muted-foreground text-xs">{docLabel}</p>
         </div>
@@ -201,14 +213,18 @@ export default function DocumentEditorPage({
             variant="ghost"
             size="sm"
             onClick={handleDownload}
-            disabled={(!isUploadedPdf && !doc.source) || compileMutation.isPending}
+            disabled={
+              (!isUploadedPdf && !doc.source) || compileMutation.isPending
+            }
           >
             <Download className="mr-1 h-4 w-4" />
             {compileMutation.isPending ? "Compiling..." : "Download PDF"}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger
-              render={<Button variant="ghost" size="icon" className="h-8 w-8" />}
+              render={
+                <Button variant="ghost" size="icon" className="h-8 w-8" />
+              }
             >
               <MoreHorizontal className="h-4 w-4" />
             </DropdownMenuTrigger>
@@ -253,7 +269,9 @@ export default function DocumentEditorPage({
           /* Uploaded PDF — read-only preview */
           <div className="flex h-full flex-col">
             <div className="bg-muted/50 flex shrink-0 items-center border-b px-3 py-1.5">
-              <span className="text-muted-foreground text-xs font-medium">Preview</span>
+              <span className="text-muted-foreground text-xs font-medium">
+                Preview
+              </span>
               <span className="text-muted-foreground ml-auto flex items-center gap-1 text-xs">
                 <FileText className="h-3 w-3" />
                 Uploaded PDF
@@ -320,15 +338,20 @@ export default function DocumentEditorPage({
               </div>
             </Panel>
 
-            <Separator className="w-1.5 cursor-col-resize bg-transparent transition-colors hover:bg-border data-[active]:bg-border" />
+            <Separator className="hover:bg-border data-[active]:bg-border w-1.5 cursor-col-resize bg-transparent transition-colors" />
 
             {/* Right: PDF preview */}
             <Panel defaultSize={60} minSize={20} className="flex flex-col">
               <div className="bg-muted/50 flex shrink-0 items-center border-b px-3 py-1.5">
-                <span className="text-muted-foreground text-xs font-medium">Preview</span>
+                <span className="text-muted-foreground text-xs font-medium">
+                  Preview
+                </span>
               </div>
               <div className="min-h-0 flex-1">
-                <PdfPreview source={source ?? ""} yamlContent={yamlContent ?? undefined} />
+                <PdfPreview
+                  source={source ?? ""}
+                  yamlContent={yamlContent ?? undefined}
+                />
               </div>
             </Panel>
           </Group>
@@ -336,7 +359,9 @@ export default function DocumentEditorPage({
           /* Preview only — full width */
           <div className="flex h-full flex-col">
             <div className="bg-muted/50 flex shrink-0 items-center border-b px-3 py-1.5">
-              <span className="text-muted-foreground text-xs font-medium">Preview</span>
+              <span className="text-muted-foreground text-xs font-medium">
+                Preview
+              </span>
               {doc.templateId && (
                 <span className="text-muted-foreground ml-auto flex items-center gap-1 text-xs">
                   <FileText className="h-3 w-3" />
@@ -345,7 +370,10 @@ export default function DocumentEditorPage({
               )}
             </div>
             <div className="min-h-0 flex-1">
-              <PdfPreview source={source ?? ""} yamlContent={yamlContent ?? undefined} />
+              <PdfPreview
+                source={source ?? ""}
+                yamlContent={yamlContent ?? undefined}
+              />
             </div>
           </div>
         )}

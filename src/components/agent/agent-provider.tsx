@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { api } from "@/trpc/react";
 
 type PageContext = {
@@ -17,9 +23,21 @@ export type AgentModel = {
 };
 
 export const AGENT_MODELS: AgentModel[] = [
-  { id: "anthropic/claude-sonnet-4-20250514", label: "Sonnet 4", provider: "Anthropic" },
-  { id: "anthropic/claude-opus-4-20250514", label: "Opus 4", provider: "Anthropic" },
-  { id: "anthropic/claude-haiku-4-5-20251001", label: "Haiku 4.5", provider: "Anthropic" },
+  {
+    id: "anthropic/claude-sonnet-4-20250514",
+    label: "Sonnet 4",
+    provider: "Anthropic",
+  },
+  {
+    id: "anthropic/claude-opus-4-20250514",
+    label: "Opus 4",
+    provider: "Anthropic",
+  },
+  {
+    id: "anthropic/claude-haiku-4-5-20251001",
+    label: "Haiku 4.5",
+    provider: "Anthropic",
+  },
 ];
 
 const DEFAULT_MODEL = AGENT_MODELS[0]!.id;
@@ -49,7 +67,9 @@ const STORAGE_KEY = "agent-panel-open";
 
 export function AgentProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [pageContext, setPageContext] = useState<PageContext>({ page: "dashboard" });
+  const [pageContext, setPageContext] = useState<PageContext>({
+    page: "dashboard",
+  });
   const [modelId, setModelIdState] = useState(DEFAULT_MODEL);
   const [openChatIds, setOpenChatIds] = useState<string[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -117,21 +137,24 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(ACTIVE_CHAT_STORAGE_KEY, id);
   }, []);
 
-  const closeChat = useCallback((id: string) => {
-    setOpenChatIds((prev) => {
-      const next = prev.filter((cid) => cid !== id);
-      localStorage.setItem(OPEN_CHATS_STORAGE_KEY, JSON.stringify(next));
-      return next;
-    });
-    setActiveChatId((prev) => {
-      if (prev !== id) return prev;
-      // Activate the previous tab or null
-      const remaining = openChatIds.filter((cid) => cid !== id);
-      const next = remaining[remaining.length - 1] ?? null;
-      localStorage.setItem(ACTIVE_CHAT_STORAGE_KEY, next ?? "");
-      return next;
-    });
-  }, [openChatIds]);
+  const closeChat = useCallback(
+    (id: string) => {
+      setOpenChatIds((prev) => {
+        const next = prev.filter((cid) => cid !== id);
+        localStorage.setItem(OPEN_CHATS_STORAGE_KEY, JSON.stringify(next));
+        return next;
+      });
+      setActiveChatId((prev) => {
+        if (prev !== id) return prev;
+        // Activate the previous tab or null
+        const remaining = openChatIds.filter((cid) => cid !== id);
+        const next = remaining[remaining.length - 1] ?? null;
+        localStorage.setItem(ACTIVE_CHAT_STORAGE_KEY, next ?? "");
+        return next;
+      });
+    },
+    [openChatIds],
+  );
 
   const newChat = useCallback(async () => {
     const chat = await createChat.mutateAsync({});
@@ -139,21 +162,23 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   }, [createChat, openChat]);
 
   return (
-    <AgentContext value={{
-      isOpen,
-      toggleAgent,
-      openAgent,
-      closeAgent,
-      pageContext,
-      setPageContext,
-      modelId,
-      setModelId,
-      openChatIds,
-      activeChatId,
-      openChat,
-      closeChat,
-      newChat,
-    }}>
+    <AgentContext
+      value={{
+        isOpen,
+        toggleAgent,
+        openAgent,
+        closeAgent,
+        pageContext,
+        setPageContext,
+        modelId,
+        setModelId,
+        openChatIds,
+        activeChatId,
+        openChat,
+        closeChat,
+        newChat,
+      }}
+    >
       {children}
     </AgentContext>
   );
@@ -171,5 +196,11 @@ export function usePageContext(context: PageContext) {
   useEffect(() => {
     setPageContext(context);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setPageContext, context.page, context.applicationId, context.documentType, context.documentId]);
+  }, [
+    setPageContext,
+    context.page,
+    context.applicationId,
+    context.documentType,
+    context.documentId,
+  ]);
 }

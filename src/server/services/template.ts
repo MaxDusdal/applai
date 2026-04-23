@@ -7,7 +7,9 @@ export class TemplateService {
     return templates;
   }
 
-  listByType(documentType: "CV" | "COVER_LETTER" | "ADDITIONAL"): TemplateConfig[] {
+  listByType(
+    documentType: "CV" | "COVER_LETTER" | "ADDITIONAL",
+  ): TemplateConfig[] {
     return templates.filter((t) => t.documentTypes.includes(documentType));
   }
 

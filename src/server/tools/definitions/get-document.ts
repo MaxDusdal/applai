@@ -11,11 +11,15 @@ export const getDocument = defineTool({
       documentId: z
         .string()
         .optional()
-        .describe("Specific document ID (preferred when multiple docs of the same type exist)"),
+        .describe(
+          "Specific document ID (preferred when multiple docs of the same type exist)",
+        ),
       type: z
         .enum(["CV", "COVER_LETTER", "ADDITIONAL"])
         .optional()
-        .describe("Document type (used as fallback if documentId is not provided)"),
+        .describe(
+          "Document type (used as fallback if documentId is not provided)",
+        ),
     })
     .refine((d) => d.documentId ?? d.type, "Provide documentId or type"),
   execute: async ({ applicationId, documentId, type }, ctx) => {

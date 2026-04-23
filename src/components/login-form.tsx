@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldDescription,
@@ -11,45 +11,45 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { GalleryVerticalEndIcon } from "lucide-react"
-import { authClient } from "@/server/better-auth/client"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { GalleryVerticalEndIcon } from "lucide-react";
+import { authClient } from "@/server/better-auth/client";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const router = useRouter()
-  const [mode, setMode] = useState<"login" | "signup">("login")
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     if (mode === "login") {
-      const result = await authClient.signIn.email({ email, password })
+      const result = await authClient.signIn.email({ email, password });
       if (result.error) {
-        setError(result.error.message ?? "Sign in failed")
-        setLoading(false)
-        return
+        setError(result.error.message ?? "Sign in failed");
+        setLoading(false);
+        return;
       }
     } else {
-      const result = await authClient.signUp.email({ name, email, password })
+      const result = await authClient.signUp.email({ name, email, password });
       if (result.error) {
-        setError(result.error.message ?? "Sign up failed")
-        setLoading(false)
-        return
+        setError(result.error.message ?? "Sign up failed");
+        setLoading(false);
+        return;
       }
     }
 
-    router.push("/dashboard")
+    router.push("/dashboard");
   }
 
   return (
@@ -57,10 +57,18 @@ export function LoginForm({
       <form onSubmit={handleSubmit}>
         {/* Hidden native submit button so Enter key works from any field.
             Base UI's Button hardcodes type="button" and ignores type="submit". */}
-        <button type="submit" aria-hidden="true" className="sr-only" tabIndex={-1} />
+        <button
+          type="submit"
+          aria-hidden="true"
+          className="sr-only"
+          tabIndex={-1}
+        />
         <FieldGroup>
           <div className="flex flex-col items-center gap-2 text-center">
-            <a href="#" className="flex flex-col items-center gap-2 font-medium">
+            <a
+              href="#"
+              className="flex flex-col items-center gap-2 font-medium"
+            >
               <div className="flex size-8 items-center justify-center rounded-md">
                 <GalleryVerticalEndIcon className="size-6" />
               </div>
@@ -75,8 +83,11 @@ export function LoginForm({
                   Don&apos;t have an account?{" "}
                   <button
                     type="button"
-                    className="underline underline-offset-4 hover:text-primary"
-                    onClick={() => { setError(null); setMode("signup") }}
+                    className="hover:text-primary underline underline-offset-4"
+                    onClick={() => {
+                      setError(null);
+                      setMode("signup");
+                    }}
                   >
                     Sign up
                   </button>
@@ -86,8 +97,11 @@ export function LoginForm({
                   Already have an account?{" "}
                   <button
                     type="button"
-                    className="underline underline-offset-4 hover:text-primary"
-                    onClick={() => { setError(null); setMode("login") }}
+                    className="hover:text-primary underline underline-offset-4"
+                    onClick={() => {
+                      setError(null);
+                      setMode("login");
+                    }}
                   >
                     Sign in
                   </button>
@@ -140,8 +154,12 @@ export function LoginForm({
           <Field>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading
-                ? mode === "login" ? "Signing in…" : "Creating account…"
-                : mode === "login" ? "Login" : "Create account"}
+                ? mode === "login"
+                  ? "Signing in…"
+                  : "Creating account…"
+                : mode === "login"
+                  ? "Login"
+                  : "Create account"}
             </Button>
           </Field>
 
@@ -170,9 +188,9 @@ export function LoginForm({
         </FieldGroup>
       </form>
       <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our{" "}
-        <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
+        and <a href="#">Privacy Policy</a>.
       </FieldDescription>
     </div>
-  )
+  );
 }

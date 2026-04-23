@@ -110,7 +110,10 @@ export function NewApplicationDialog({
     e.stopPropagation();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file && (file.type === "application/pdf" || file.name.endsWith(".pdf"))) {
+    if (
+      file &&
+      (file.type === "application/pdf" || file.name.endsWith(".pdf"))
+    ) {
       loadFile(file);
     }
   }, []);
@@ -164,7 +167,11 @@ export function NewApplicationDialog({
     });
   }
 
-  const INPUT_MODES: { id: InputMode; label: string; icon: React.ElementType }[] = [
+  const INPUT_MODES: {
+    id: InputMode;
+    label: string;
+    icon: React.ElementType;
+  }[] = [
     { id: "text", label: "Text", icon: Type },
     { id: "url", label: "URL", icon: Globe },
     { id: "pdf", label: "PDF", icon: FileUp },
@@ -234,7 +241,9 @@ export function NewApplicationDialog({
             {/* PDF upload */}
             {mode === "pdf" && (
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium">Job Description PDF</label>
+                <label className="text-sm font-medium">
+                  Job Description PDF
+                </label>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -254,7 +263,9 @@ export function NewApplicationDialog({
                       : "hover:bg-muted text-muted-foreground"
                   }`}
                 >
-                  <FileUp className={`h-6 w-6 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
+                  <FileUp
+                    className={`h-6 w-6 ${isDragging ? "text-primary" : "text-muted-foreground"}`}
+                  />
                   <span>
                     {fileName
                       ? fileName

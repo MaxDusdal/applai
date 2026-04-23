@@ -28,7 +28,8 @@ export async function GET(
   const response = await pdfService.stream(doc.pdfUrl);
 
   // Attach a friendly filename for downloads
-  const filename = (doc.name ?? doc.type).replace(/[^a-zA-Z0-9_.-]/g, "_") + ".pdf";
+  const filename =
+    (doc.name ?? doc.type).replace(/[^a-zA-Z0-9_.-]/g, "_") + ".pdf";
   const newHeaders = new Headers(response.headers);
   newHeaders.set("Content-Disposition", `inline; filename="${filename}"`);
 

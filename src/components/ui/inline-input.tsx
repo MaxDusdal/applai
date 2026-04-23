@@ -38,7 +38,7 @@ const InlineInput = React.forwardRef<
         ref={mirrorRef}
         aria-hidden
         className={cn(
-          "pointer-events-none invisible absolute left-0 top-0 whitespace-pre",
+          "pointer-events-none invisible absolute top-0 left-0 whitespace-pre",
           className,
         )}
       >
@@ -51,7 +51,7 @@ const InlineInput = React.forwardRef<
         defaultValue={defaultValue}
         onChange={onChange}
         className={cn(
-          "min-w-[1ch] border-b border-dotted border-muted-foreground/30 bg-transparent px-0 py-0 leading-normal outline-none transition-colors placeholder:text-muted-foreground hover:border-muted-foreground/60 focus:border-muted-foreground disabled:pointer-events-none disabled:opacity-50",
+          "border-muted-foreground/30 placeholder:text-muted-foreground hover:border-muted-foreground/60 focus:border-muted-foreground min-w-[1ch] border-b border-dotted bg-transparent px-0 py-0 leading-normal transition-colors outline-none disabled:pointer-events-none disabled:opacity-50",
           className,
         )}
         {...props}

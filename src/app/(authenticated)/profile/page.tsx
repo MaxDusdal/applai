@@ -29,7 +29,7 @@ export default function ProfilePage() {
 
   if (profile.isLoading) {
     return (
-      <div className="animate-pulse flex-1 p-6">
+      <div className="flex-1 animate-pulse p-6">
         <div className="bg-muted mb-4 h-8 w-48 rounded" />
         <div className="bg-muted h-64 rounded" />
       </div>

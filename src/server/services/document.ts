@@ -91,7 +91,8 @@ export class DocumentService {
     }
 
     // Version snapshot logic
-    const hasContent = (current.source && current.source.length > 0) ||
+    const hasContent =
+      (current.source && current.source.length > 0) ||
       (current.yamlContent && current.yamlContent.length > 0);
 
     if (hasContent) {
@@ -122,8 +123,12 @@ export class DocumentService {
       where: { id },
       data: {
         ...(data.source !== undefined && { source: data.source }),
-        ...(data.yamlContent !== undefined && { yamlContent: data.yamlContent }),
-        ...(data.chatHistory !== undefined && { chatHistory: data.chatHistory }),
+        ...(data.yamlContent !== undefined && {
+          yamlContent: data.yamlContent,
+        }),
+        ...(data.chatHistory !== undefined && {
+          chatHistory: data.chatHistory,
+        }),
       },
     });
   }

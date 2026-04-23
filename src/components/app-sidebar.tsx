@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import { usePathname, useParams } from "next/navigation"
+import * as React from "react";
+import Link from "next/link";
+import { usePathname, useParams } from "next/navigation";
 
-import { NavUser } from "@/components/nav-user"
-import { StatusBadge } from "@/components/applications/status-badge"
-import { NewApplicationDialog } from "@/components/applications/new-application-dialog"
-import { CompanyLogo } from "@/components/company-logo"
+import { NavUser } from "@/components/nav-user";
+import { StatusBadge } from "@/components/applications/status-badge";
+import { NewApplicationDialog } from "@/components/applications/new-application-dialog";
+import { CompanyLogo } from "@/components/company-logo";
 import {
   Sidebar,
   SidebarContent,
@@ -20,7 +20,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import {
   LayoutDashboardIcon,
   UserIcon,
@@ -28,9 +28,9 @@ import {
   SettingsIcon,
   SparklesIcon,
   PlusIcon,
-} from "lucide-react"
-import { api } from "@/trpc/react"
-import { Button } from "@/components/ui/button"
+} from "lucide-react";
+import { api } from "@/trpc/react";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   {
@@ -57,48 +57,52 @@ const navItems = [
     icon: SettingsIcon,
     matchPrefixes: ["/settings"],
   },
-]
+];
 
 function formatRelativeDate(date: Date): string {
-  const now = new Date()
-  const diff = now.getTime() - new Date(date).getTime()
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  if (days === 0) return "Today"
-  if (days === 1) return "Yesterday"
-  if (days < 7) return `${days}d ago`
-  if (days < 30) return `${Math.floor(days / 7)}w ago`
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(date))
+  const now = new Date();
+  const diff = now.getTime() - new Date(date).getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days}d ago`;
+  if (days < 30) return `${Math.floor(days / 7)}w ago`;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(new Date(date));
 }
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   user: {
-    name: string
-    email: string
-    image: string | null
-  }
-}
+    name: string;
+    email: string;
+    image: string | null;
+  };
+};
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
-  const pathname = usePathname()
-  const params = useParams()
-  const { setOpen } = useSidebar()
-  const [search, setSearch] = React.useState("")
-  const [dialogOpen, setDialogOpen] = React.useState(false)
+  const pathname = usePathname();
+  const params = useParams();
+  const { setOpen } = useSidebar();
+  const [search, setSearch] = React.useState("");
+  const [dialogOpen, setDialogOpen] = React.useState(false);
 
-  const activeNav = navItems.find((item) =>
-    item.matchPrefixes.some((prefix) => pathname.startsWith(prefix))
-  ) ?? navItems[0]!
+  const activeNav =
+    navItems.find((item) =>
+      item.matchPrefixes.some((prefix) => pathname.startsWith(prefix)),
+    ) ?? navItems[0]!;
 
-  const showApplicationsPanel = activeNav.title === "Applications"
+  const showApplicationsPanel = activeNav.title === "Applications";
 
   // Auto-collapse sidebar on non-application pages (no second panel to show)
   React.useEffect(() => {
     if (!showApplicationsPanel) {
-      setOpen(false)
+      setOpen(false);
     }
-  }, [showApplicationsPanel, setOpen])
+  }, [showApplicationsPanel, setOpen]);
 
-  const activeApplicationId = params.id as string | undefined
+  const activeApplicationId = params.id as string | undefined;
 
   return (
     <Sidebar
@@ -109,7 +113,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       {/* First sidebar — icon rail */}
       <Sidebar
         collapsible="none"
-        className="w-[calc(var(--sidebar-width-icon)+1px)]! border-r"
+        className="!w-[calc(var(--sidebar-width-icon)+1px)] border-r"
       >
         <SidebarHeader>
           <SidebarMenu>
@@ -119,7 +123,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                 className="md:h-8 md:p-0"
                 render={<Link href="/dashboard" />}
               >
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <SparklesIcon className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -134,14 +138,11 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
             <SidebarGroupContent className="px-1.5 md:px-0">
               <SidebarMenu>
                 {navItems.map((item) => {
-                  const isActive = item.title === activeNav.title
+                  const isActive = item.title === activeNav.title;
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
-                        tooltip={{
-                          children: item.title,
-                          hidden: false,
-                        }}
+                        tooltip={item.title}
                         render={<Link href={item.href} />}
                         onClick={() => setOpen(true)}
                         isActive={isActive}
@@ -151,7 +152,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                         <span>{item.title}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                  )
+                  );
                 })}
               </SidebarMenu>
             </SidebarGroupContent>
@@ -164,13 +165,20 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
 
       {/* Second sidebar — applications list panel (desktop only, only on applications route) */}
       {showApplicationsPanel && (
-        <Sidebar collapsible="none" className="hidden flex-1 md:flex overflow-hidden w-auto!">
+        <Sidebar
+          collapsible="none"
+          className="hidden !w-auto flex-1 overflow-hidden md:flex"
+        >
           <SidebarHeader className="gap-3.5 border-b p-4">
             <div className="flex w-full items-center justify-between">
-              <div className="text-base font-medium text-foreground">
+              <div className="text-foreground text-base font-medium">
                 Applications
               </div>
-              <Button size="sm" variant="ghost" onClick={() => setDialogOpen(true)}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setDialogOpen(true)}
+              >
                 <PlusIcon className="size-4" />
                 <span className="sr-only">New Application</span>
               </Button>
@@ -191,65 +199,66 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
               </SidebarGroupContent>
             </SidebarGroup>
           </SidebarContent>
-          <NewApplicationDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+          <NewApplicationDialog
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+          />
         </Sidebar>
       )}
     </Sidebar>
-  )
+  );
 }
 
 function ApplicationListPanel({
   search,
   activeApplicationId,
 }: {
-  search: string
-  activeApplicationId?: string
+  search: string;
+  activeApplicationId?: string;
 }) {
-  const applications = api.application.list.useQuery()
+  const applications = api.application.list.useQuery();
 
   if (applications.isLoading) {
     return (
       <div className="space-y-2 p-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="animate-pulse space-y-1.5">
-            <div className="h-4 w-3/4 rounded bg-muted" />
-            <div className="h-3 w-1/2 rounded bg-muted" />
+            <div className="bg-muted h-4 w-3/4 rounded" />
+            <div className="bg-muted h-3 w-1/2 rounded" />
           </div>
         ))}
       </div>
-    )
+    );
   }
 
-  const data = applications.data ?? []
+  const data = applications.data ?? [];
   const filtered = search
     ? data.filter(
         (app) =>
           app.company.toLowerCase().includes(search.toLowerCase()) ||
-          app.role.toLowerCase().includes(search.toLowerCase())
+          app.role.toLowerCase().includes(search.toLowerCase()),
       )
-    : data
+    : data;
 
   if (filtered.length === 0) {
     return (
-      <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground px-4 py-8 text-center text-sm">
         {search ? "No results found." : "No applications yet."}
       </div>
-    )
+    );
   }
 
   return (
     <>
       {filtered.map((app) => {
-        const isActive = app.id === activeApplicationId
+        const isActive = app.id === activeApplicationId;
 
         return (
           <Link
             href={`/applications/${app.id}`}
             key={app.id}
-            className={`flex items-start gap-3 border-b p-4 text-sm leading-tight overflow-hidden last:border-b-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
-              isActive
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : ""
+            className={`hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-start gap-3 overflow-hidden border-b p-4 text-sm leading-tight last:border-b-0 ${
+              isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
             }`}
           >
             <CompanyLogo
@@ -258,14 +267,14 @@ function ApplicationListPanel({
               size={32}
               className="rounded-lg"
             />
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate font-medium">{app.company}</span>
-                <span className="shrink-0 text-xs text-muted-foreground">
+                <span className="text-muted-foreground shrink-0 text-xs">
                   {formatRelativeDate(app.updatedAt)}
                 </span>
               </div>
-              <span className="truncate text-xs text-muted-foreground block">
+              <span className="text-muted-foreground block truncate text-xs">
                 {app.role}
               </span>
               <div className="mt-1.5">
@@ -273,8 +282,8 @@ function ApplicationListPanel({
               </div>
             </div>
           </Link>
-        )
+        );
       })}
     </>
-  )
+  );
 }
