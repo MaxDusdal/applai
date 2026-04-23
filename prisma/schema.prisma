@@ -112,6 +112,14 @@ enum ActivityType {
   AI_INTERACTION
 }
 
+enum VersionTrigger {
+  MANUAL
+  AI_EDIT
+  TEMPLATE_LOAD
+  RESTORE
+  AUTO
+}
+
 model Profile {
   id        String   @id @default(cuid())
   userId    String   @unique
@@ -126,6 +134,7 @@ model Application {
   userId         String
   user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   company        String
+  domain         String?
   role           String
   status         ApplicationStatus @default(RESEARCH)
   type           ApplicationType   @default(EXTERNAL)
@@ -161,7 +170,6 @@ model Document {
   type           DocumentType
   name           String?
   source         String       @db.Text
-  previousSource String?      @db.Text
   yamlContent    String?      @db.Text
   templateId     String?
   pdfUrl         String?
@@ -171,8 +179,25 @@ model Document {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
+  versions DocumentVersion[]
+
   @@index([applicationId])
   @@index([userId])
+}
+
+model DocumentVersion {
+  id          String         @id @default(cuid())
+  documentId  String
+  document    Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  version     Int
+  source      String         @db.Text
+  yamlContent String?        @db.Text
+  trigger     VersionTrigger
+  label       String?
+  createdAt   DateTime       @default(now())
+
+  @@index([documentId, version])
+  @@index([documentId, createdAt])
 }
 
 model Activity {

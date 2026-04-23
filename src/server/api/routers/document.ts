@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { DocumentService } from "@/server/services/document";
+import { DocumentVersionService } from "@/server/services/document-version";
 import { TemplateService } from "@/server/services/template";
 import { CompilationService } from "@/server/services/compilation";
 import { PdfUploadService } from "@/server/services/pdf-upload";
@@ -85,6 +86,15 @@ export const documentRouter = createTRPCRouter({
         yamlContent,
         templateId: input.templateId,
       });
+
+      const versionService = new DocumentVersionService(ctx.db);
+      await versionService.createVersion(doc.id, {
+        source: doc.source,
+        yamlContent: doc.yamlContent,
+        trigger: "TEMPLATE_LOAD",
+        label: "Created from template",
+      });
+
       return doc;
     }),
 
@@ -124,6 +134,62 @@ export const documentRouter = createTRPCRouter({
         extractedText,
         isUploadedPdf: true,
       });
+    }),
+
+  listVersions: protectedProcedure
+    .input(
+      z.object({
+        documentId: z.string(),
+        limit: z.number().int().min(1).max(50).optional(),
+        cursor: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const versionService = new DocumentVersionService(ctx.db);
+      return versionService.listVersions(ctx.session.user.id, input.documentId, {
+        limit: input.limit,
+        cursor: input.cursor,
+      });
+    }),
+
+  getVersion: protectedProcedure
+    .input(z.object({ versionId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const versionService = new DocumentVersionService(ctx.db);
+      const version = await versionService.getVersion(ctx.session.user.id, input.versionId);
+      if (!version) throw new TRPCError({ code: "NOT_FOUND" });
+      return version;
+    }),
+
+  createVersion: protectedProcedure
+    .input(
+      z.object({
+        documentId: z.string(),
+        label: z.string().max(100).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const docService = new DocumentService(ctx.db);
+      const doc = await docService.getById(ctx.session.user.id, input.documentId);
+      if (!doc) throw new TRPCError({ code: "NOT_FOUND" });
+      if (doc.isUploadedPdf) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot version uploaded PDFs." });
+      }
+
+      const versionService = new DocumentVersionService(ctx.db);
+      return versionService.createVersion(doc.id, {
+        source: doc.source,
+        yamlContent: doc.yamlContent,
+        trigger: "MANUAL",
+        label: input.label,
+      });
+    }),
+
+  restoreVersion: protectedProcedure
+    .input(z.object({ versionId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const versionService = new DocumentVersionService(ctx.db);
+      return versionService.restoreVersion(ctx.session.user.id, input.versionId);
     }),
 
   compile: protectedProcedure

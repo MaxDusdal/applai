@@ -14,6 +14,7 @@ export const env = createEnv({
     ANTHROPIC_API_KEY: z.string().optional(),
     BLOB_READ_WRITE_TOKEN:
       process.env.NODE_ENV === "production" ? z.string() : z.string().optional(),
+    LOGO_DEV_SECRET_KEY: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -25,7 +26,7 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    NEXT_PUBLIC_LOGO_DEV_TOKEN: z.string().optional(),
   },
 
   /**
@@ -38,6 +39,8 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
+    LOGO_DEV_SECRET_KEY: process.env.LOGO_DEV_SECRET_KEY,
+    NEXT_PUBLIC_LOGO_DEV_TOKEN: process.env.NEXT_PUBLIC_LOGO_DEV_TOKEN,
     NODE_ENV: process.env.NODE_ENV,
   },
   /**

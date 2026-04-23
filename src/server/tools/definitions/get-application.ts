@@ -5,7 +5,7 @@ import { defineTool } from "../types";
 export const getApplication = defineTool({
   name: "getApplication",
   description:
-    "Get details of a specific application including job description, documents, and activity",
+    "Get details of a specific application including job description, metadata, documents with full content, and activity",
   inputSchema: z.object({
     applicationId: z.string().describe("The application ID"),
   }),
@@ -19,14 +19,31 @@ export const getApplication = defineTool({
       role: app.role,
       status: app.status,
       jobDescription: app.jobDescription,
-      documents: app.documents.map((d) => ({
-        id: d.id,
-        type: d.type,
-        name: d.name,
-        isUploadedPdf: d.isUploadedPdf,
-        hasContent: d.isUploadedPdf || d.source.length > 0,
-        updatedAt: d.updatedAt.toISOString(),
-      })),
+      metadata: app.metadata.map((m) => ({ key: m.key, value: m.value })),
+      documents: app.documents.map((d) => {
+        if (d.isUploadedPdf) {
+          return {
+            id: d.id,
+            type: d.type,
+            name: d.name,
+            isUploadedPdf: true as const,
+            extractedText: d.extractedText ?? null,
+            updatedAt: d.updatedAt.toISOString(),
+          };
+        }
+        const isYamlDriven = !!d.yamlContent;
+        return {
+          id: d.id,
+          type: d.type,
+          name: d.name,
+          isUploadedPdf: false as const,
+          isYamlDriven,
+          yamlContent: d.yamlContent ?? null,
+          typstSource: d.source,
+          templateId: d.templateId,
+          updatedAt: d.updatedAt.toISOString(),
+        };
+      }),
       activities: app.activities.slice(0, 10).map((a) => ({
         type: a.type,
         description: a.description,

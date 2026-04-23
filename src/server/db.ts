@@ -58,8 +58,8 @@ const createPrismaClient = () => {
             name: string | null;
           };
 
-          // Only log when source content changes
-          if (args.data?.source) {
+          // Only log when source or yamlContent changes
+          if (args.data?.source || args.data?.yamlContent) {
             try {
               if (r.userId && r.applicationId) {
                 await baseClient.activity.create({

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { ApplicationService } from "@/server/services/application";
+import { resolveCompanyDomain } from "@/server/services/domain";
 import { generateObject } from "ai";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse = require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
@@ -38,11 +39,13 @@ export const applicationRouter = createTRPCRouter({
         role: z.string().min(1),
         type: z.enum(applicationTypeValues).optional(),
         jobDescription: z.string().optional(),
+        domain: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const service = new ApplicationService(ctx.db);
-      return service.create(ctx.session.user.id, input);
+      const domain = await resolveCompanyDomain(input.company, input.domain);
+      return service.create(ctx.session.user.id, { ...input, domain });
     }),
 
   update: protectedProcedure
@@ -54,11 +57,20 @@ export const applicationRouter = createTRPCRouter({
         status: z.enum(applicationStatusValues).optional(),
         type: z.enum(applicationTypeValues).optional(),
         jobDescription: z.string().nullable().optional(),
+        domain: z.string().nullable().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       const service = new ApplicationService(ctx.db);
+
+      if (data.company !== undefined && data.domain === undefined) {
+        const current = await service.get(ctx.session.user.id, id);
+        if (current && current.company !== data.company) {
+          data.domain = await resolveCompanyDomain(data.company);
+        }
+      }
+
       return service.update(ctx.session.user.id, id, data);
     }),
 
@@ -123,6 +135,7 @@ export const applicationRouter = createTRPCRouter({
         role: z.string().min(1),
         type: z.enum(applicationTypeValues).optional(),
         jobDescription: z.string().optional(),
+        domain: z.string().optional(),
         metadata: z
           .array(z.object({ key: z.string(), value: z.string() }))
           .optional(),
@@ -130,7 +143,8 @@ export const applicationRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const service = new ApplicationService(ctx.db);
-      return service.createWithMeta(ctx.session.user.id, input);
+      const domain = await resolveCompanyDomain(input.company, input.domain);
+      return service.createWithMeta(ctx.session.user.id, { ...input, domain });
     }),
 
   parseJobDescription: protectedProcedure
@@ -193,7 +207,8 @@ ${truncated}
 Instructions:
 - Extract the company name and role/job title.
 - For the job description: copy the relevant content AS-IS from the posting. Do NOT rewrite, summarise, or paraphrase any sentences. Only remove obvious navigation chrome, cookie banners, repeated boilerplate headers/footers, and fix any encoding artifacts or broken whitespace. The goal is that the saved text reads exactly as the employer wrote it.
-- Extract additional structured details (location, salary, contract type, career level, department, application deadline, etc.) as key-value metadata. Only include fields that are explicitly stated in the posting.`,
+- Extract additional structured details (location, salary, contract type, career level, department, application deadline, etc.) as key-value metadata. Only include fields that are explicitly stated in the posting.
+- If the posting mentions the company's own web domain (via apply link, contact email, or explicit URL), extract it as \`domain\` without scheme or path (e.g. 'stripe.com'). Omit if not clearly stated.`,
         schema: z.object({
           company: z.string().describe("The company name"),
           role: z.string().describe("The job title / role name"),
@@ -201,6 +216,12 @@ Instructions:
             .string()
             .describe(
               "The job description text exactly as written by the employer — do not rewrite or summarise. Only strip non-content elements (nav bars, cookie notices, repeated page headers/footers).",
+            ),
+          domain: z
+            .string()
+            .optional()
+            .describe(
+              "Most likely primary domain for the company (e.g. 'stripe.com'). Extract from apply URLs, email addresses, explicit 'apply at X.com' mentions. Omit if not clearly stated.",
             ),
           metadata: z
             .array(

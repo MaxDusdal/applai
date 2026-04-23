@@ -1,0 +1,143 @@
+import type { db } from "@/server/db";
+import type { VersionTrigger } from "@prisma/client";
+
+type DbClient = typeof db;
+
+const AUTO_SNAPSHOT_GAP_MS = 5 * 60 * 1000; // 5 minutes
+
+export class DocumentVersionService {
+  constructor(private db: DbClient) {}
+
+  async createVersion(
+    documentId: string,
+    data: {
+      source: string;
+      yamlContent?: string | null;
+      trigger: VersionTrigger;
+      label?: string;
+    },
+  ) {
+    const nextVersion = await this.getNextVersionNumber(documentId);
+
+    return this.db.documentVersion.create({
+      data: {
+        documentId,
+        version: nextVersion,
+        source: data.source,
+        yamlContent: data.yamlContent,
+        trigger: data.trigger,
+        label: data.label,
+      },
+    });
+  }
+
+  async listVersions(
+    userId: string,
+    documentId: string,
+    opts?: { limit?: number; cursor?: string },
+  ) {
+    const doc = await this.db.document.findFirst({
+      where: { id: documentId, userId },
+      select: { id: true },
+    });
+    if (!doc) throw new Error("Not found");
+
+    const limit = opts?.limit ?? 20;
+
+    const versions = await this.db.documentVersion.findMany({
+      where: { documentId },
+      orderBy: { version: "desc" },
+      take: limit + 1,
+      ...(opts?.cursor && {
+        cursor: { id: opts.cursor },
+        skip: 1,
+      }),
+      select: {
+        id: true,
+        version: true,
+        trigger: true,
+        label: true,
+        createdAt: true,
+      },
+    });
+
+    const hasMore = versions.length > limit;
+    if (hasMore) versions.pop();
+
+    return {
+      versions,
+      nextCursor: hasMore ? versions[versions.length - 1]!.id : undefined,
+    };
+  }
+
+  async getVersion(userId: string, versionId: string) {
+    const version = await this.db.documentVersion.findFirst({
+      where: { id: versionId },
+      include: { document: { select: { userId: true } } },
+    });
+    if (!version?.document.userId || version.document.userId !== userId) return null;
+
+    const { document: _, ...rest } = version;
+    return rest;
+  }
+
+  async restoreVersion(userId: string, versionId: string) {
+    const version = await this.db.documentVersion.findFirst({
+      where: { id: versionId },
+      include: {
+        document: {
+          select: { id: true, userId: true, source: true, yamlContent: true, isUploadedPdf: true },
+        },
+      },
+    });
+    if (!version?.document.userId || version.document.userId !== userId) {
+      throw new Error("Not found");
+    }
+    if (version.document.isUploadedPdf) {
+      throw new Error("Uploaded PDF documents cannot be edited.");
+    }
+
+    const doc = version.document;
+
+    // Snapshot current state before restoring
+    if (doc.source || doc.yamlContent) {
+      await this.createVersion(doc.id, {
+        source: doc.source,
+        yamlContent: doc.yamlContent,
+        trigger: "RESTORE",
+        label: `Before restoring to version ${version.version}`,
+      });
+    }
+
+    // Update document to restored content
+    const updated = await this.db.document.update({
+      where: { id: doc.id },
+      data: {
+        source: version.source,
+        yamlContent: version.yamlContent,
+      },
+    });
+
+    return updated;
+  }
+
+  async shouldAutoSnapshot(documentId: string): Promise<boolean> {
+    const latest = await this.db.documentVersion.findFirst({
+      where: { documentId },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+
+    if (!latest) return true;
+    return Date.now() - latest.createdAt.getTime() > AUTO_SNAPSHOT_GAP_MS;
+  }
+
+  private async getNextVersionNumber(documentId: string): Promise<number> {
+    const latest = await this.db.documentVersion.findFirst({
+      where: { documentId },
+      orderBy: { version: "desc" },
+      select: { version: true },
+    });
+    return (latest?.version ?? 0) + 1;
+  }
+}

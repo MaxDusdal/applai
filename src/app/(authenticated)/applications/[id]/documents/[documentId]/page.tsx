@@ -15,6 +15,8 @@ import {
   X,
   MoreHorizontal,
   Trash2,
+  History,
+  Save,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,6 +26,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { usePageContext } from "@/components/agent/agent-provider";
+import { VersionHistorySheet } from "@/components/documents/version-history-sheet";
+import { SaveVersionDialog } from "@/components/documents/save-version-dialog";
 
 const DOC_TYPE_LABELS: Record<string, string> = {
   CV: "CV",
@@ -60,6 +64,8 @@ export default function DocumentEditorPage({
   const [yamlContent, setYamlContent] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<EditorTab>("data");
   const [editorOpen, setEditorOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [saveVersionOpen, setSaveVersionOpen] = useState(false);
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -208,14 +214,24 @@ export default function DocumentEditorPage({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {!isUploadedPdf && (
-                <DropdownMenuItem onClick={() => setEditorOpen((v) => !v)}>
-                  {editorOpen ? (
-                    <X className="mr-2 h-4 w-4" />
-                  ) : (
-                    <Code2 className="mr-2 h-4 w-4" />
-                  )}
-                  {editorOpen ? "Close editor" : "Edit files"}
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem onClick={() => setEditorOpen((v) => !v)}>
+                    {editorOpen ? (
+                      <X className="mr-2 h-4 w-4" />
+                    ) : (
+                      <Code2 className="mr-2 h-4 w-4" />
+                    )}
+                    {editorOpen ? "Close editor" : "Edit files"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setHistoryOpen(true)}>
+                    <History className="mr-2 h-4 w-4" />
+                    Version history
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSaveVersionOpen(true)}>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save version
+                  </DropdownMenuItem>
+                </>
               )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -334,6 +350,21 @@ export default function DocumentEditorPage({
           </div>
         )}
       </div>
+
+      {!isUploadedPdf && (
+        <>
+          <VersionHistorySheet
+            documentId={doc.id}
+            open={historyOpen}
+            onOpenChange={setHistoryOpen}
+          />
+          <SaveVersionDialog
+            documentId={doc.id}
+            open={saveVersionOpen}
+            onOpenChange={setSaveVersionOpen}
+          />
+        </>
+      )}
     </div>
   );
 }

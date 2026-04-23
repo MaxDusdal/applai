@@ -33,6 +33,7 @@ export class ApplicationService {
             templateId: true,
             pdfUrl: true,
             isUploadedPdf: true,
+            extractedText: true,
             createdAt: true,
             updatedAt: true,
             applicationId: true,
@@ -51,6 +52,7 @@ export class ApplicationService {
       role: string;
       type?: ApplicationType;
       jobDescription?: string;
+      domain?: string | null;
     },
   ) {
     return this.db.application.create({
@@ -60,6 +62,7 @@ export class ApplicationService {
         role: data.role,
         type: data.type ?? "EXTERNAL",
         jobDescription: data.jobDescription,
+        domain: data.domain,
       },
     });
   }
@@ -73,6 +76,7 @@ export class ApplicationService {
       status?: ApplicationStatus;
       type?: ApplicationType;
       jobDescription?: string | null;
+      domain?: string | null;
     },
   ) {
     return this.db.application.updateMany({
@@ -136,6 +140,7 @@ export class ApplicationService {
       role: string;
       type?: ApplicationType;
       jobDescription?: string;
+      domain?: string | null;
       metadata?: { key: string; value: string }[];
     },
   ) {
@@ -147,6 +152,7 @@ export class ApplicationService {
           role: data.role,
           type: data.type ?? "EXTERNAL",
           jobDescription: data.jobDescription,
+          domain: data.domain,
         },
       });
 

@@ -87,7 +87,7 @@ export const patchDocument = defineTool({
       ...(target === "yamlContent"
         ? { yamlContent: patched }
         : { source: patched }),
-    });
+    }, { trigger: "AI_EDIT", versionLabel: "Before AI edit" });
 
     return { success: true, documentId: doc.id };
   },

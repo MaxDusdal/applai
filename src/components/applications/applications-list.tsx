@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Application, ApplicationStatus, ApplicationMeta, Document } from "@prisma/client";
 import { APPLICATION_STATUS_OPTIONS } from "@/components/applications/status-badge";
+import { CompanyLogo } from "@/components/company-logo";
 import { cn } from "@/lib/utils";
 import { FileText, BookOpen, CheckCircle2, Circle, MapPin, DollarSign, Calendar } from "lucide-react";
 
@@ -164,23 +165,19 @@ function ApplicationCard({ app }: { app: ApplicationWithRelations }) {
   const salary = getMetaValue(app.metadata, ["salary", "compensation", "pay"]);
   const department = getMetaValue(app.metadata, ["department", "team", "division"]);
 
-  const initials = app.company
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
-
   return (
     <div
       onClick={() => router.push(`/applications/${app.id}`)}
       className="group bg-card border rounded-2xl p-5 cursor-pointer hover:border-ring/50 hover:shadow-sm transition-all duration-150"
     >
       <div className="flex items-start gap-4">
-        {/* Logo / initials */}
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-sm font-semibold text-muted-foreground select-none">
-          {initials}
-        </div>
+        <CompanyLogo
+          company={app.company}
+          domain={app.domain}
+          size={40}
+          className="rounded-xl select-none"
+        />
+
 
         <div className="flex-1 min-w-0">
           {/* Header row */}

@@ -1,6 +1,7 @@
 import type { db } from "@/server/db";
-import type { DocumentType, Prisma } from "@prisma/client";
+import type { DocumentType, Prisma, VersionTrigger } from "@prisma/client";
 import { PdfUploadService } from "./pdf-upload";
+import { DocumentVersionService } from "./document-version";
 
 type DbClient = typeof db;
 
@@ -75,31 +76,52 @@ export class DocumentService {
       yamlContent?: string;
       chatHistory?: Prisma.InputJsonValue;
     },
+    opts?: {
+      trigger?: VersionTrigger;
+      versionLabel?: string;
+    },
   ) {
     const current = await this.db.document.findFirst({
       where: { id, userId },
-      select: { source: true, isUploadedPdf: true },
+      select: { source: true, yamlContent: true, isUploadedPdf: true },
     });
     if (!current) throw new Error("Not found");
     if (current.isUploadedPdf) {
       throw new Error("Uploaded PDF documents cannot be edited.");
     }
 
-    if (data.source !== undefined) {
-      return this.db.document.update({
-        where: { id },
-        data: {
-          previousSource: current.source || null,
-          source: data.source,
-          ...(data.yamlContent !== undefined && { yamlContent: data.yamlContent }),
-          ...(data.chatHistory !== undefined && { chatHistory: data.chatHistory }),
-        },
-      });
+    // Version snapshot logic
+    const hasContent = (current.source && current.source.length > 0) ||
+      (current.yamlContent && current.yamlContent.length > 0);
+
+    if (hasContent) {
+      const versionService = new DocumentVersionService(this.db);
+
+      if (opts?.trigger) {
+        // Explicit trigger (e.g. AI_EDIT) — always snapshot
+        await versionService.createVersion(id, {
+          source: current.source,
+          yamlContent: current.yamlContent,
+          trigger: opts.trigger,
+          label: opts.versionLabel,
+        });
+      } else {
+        // Auto-snapshot if enough time has passed
+        const shouldSnapshot = await versionService.shouldAutoSnapshot(id);
+        if (shouldSnapshot) {
+          await versionService.createVersion(id, {
+            source: current.source,
+            yamlContent: current.yamlContent,
+            trigger: "AUTO",
+          });
+        }
+      }
     }
 
     return this.db.document.update({
       where: { id },
       data: {
+        ...(data.source !== undefined && { source: data.source }),
         ...(data.yamlContent !== undefined && { yamlContent: data.yamlContent }),
         ...(data.chatHistory !== undefined && { chatHistory: data.chatHistory }),
       },
