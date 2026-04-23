@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Application, ApplicationStatus, ApplicationMeta, Document } from "@prisma/client";
+import type { Application, ApplicationStatus } from "@prisma/client";
 import { APPLICATION_STATUS_OPTIONS } from "@/components/applications/status-badge";
 import { cn } from "@/lib/utils";
-import { FileText, BookOpen, CheckCircle2, Circle, MapPin, DollarSign, Calendar } from "lucide-react";
+import { BookOpen, CheckCircle2, Circle, MapPin, DollarSign } from "lucide-react";
 
 type ApplicationWithRelations = Application & {
   documents: { type: string }[];

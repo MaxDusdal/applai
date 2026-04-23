@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "@/trpc/react";
 import { ApplicationsList } from "@/components/applications/applications-list";
 import { NewApplicationDialog } from "@/components/applications/new-application-dialog";
@@ -12,11 +12,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 export default function DashboardPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const applications = api.application.list.useQuery();
+  const [mounted, setMounted] = useState(false);
   const isMobile = useIsMobile();
 
   usePageContext({ page: "dashboard" });
 
-  if (applications.isLoading) {
+  useEffect(() => { setMounted(true); }, []);
+
+  if (applications.isLoading || !mounted) {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-3">

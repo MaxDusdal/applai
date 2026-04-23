@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { usePathname } from "next/navigation"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
@@ -23,6 +24,11 @@ const routeLabels: Record<string, string> = {
   documents: "Documents",
 }
 
+// Map segment → the href to use (overrides the default /<segment> path)
+const routeHrefs: Record<string, string> = {
+  applications: "/dashboard",
+}
+
 function useBreadcrumbs() {
   const pathname = usePathname()
   const segments = pathname.split("/").filter(Boolean)
@@ -34,7 +40,7 @@ function useBreadcrumbs() {
     const label = routeLabels[segment]
 
     if (label) {
-      const href = "/" + segments.slice(0, i + 1).join("/")
+      const href = routeHrefs[segment] ?? "/" + segments.slice(0, i + 1).join("/")
       crumbs.push({ label, href })
     }
     // Skip dynamic segments (UUIDs, etc.) — they don't get their own breadcrumb
@@ -68,16 +74,18 @@ export function AuthenticatedHeader() {
           <Breadcrumb>
             <BreadcrumbList>
               {crumbs.map((crumb, i) => (
-                <BreadcrumbItem key={i}>
+                <React.Fragment key={i}>
                   {i > 0 && <BreadcrumbSeparator />}
-                  {crumb.href ? (
-                    <BreadcrumbLink href={crumb.href}>
-                      {crumb.label}
-                    </BreadcrumbLink>
-                  ) : (
-                    <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-                  )}
-                </BreadcrumbItem>
+                  <BreadcrumbItem>
+                    {crumb.href ? (
+                      <BreadcrumbLink href={crumb.href}>
+                        {crumb.label}
+                      </BreadcrumbLink>
+                    ) : (
+                      <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                    )}
+                  </BreadcrumbItem>
+                </React.Fragment>
               ))}
             </BreadcrumbList>
           </Breadcrumb>

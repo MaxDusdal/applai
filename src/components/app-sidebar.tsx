@@ -108,7 +108,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
       {/* First sidebar — icon rail */}
       <Sidebar
         collapsible="none"
-        className="w-[calc(var(--sidebar-width-icon)+1px)]! border-r"
+        className="!w-[calc(var(--sidebar-width-icon)+1px)] border-r"
       >
         <SidebarHeader>
           <SidebarMenu>
@@ -137,10 +137,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
-                        tooltip={{
-                          children: item.title,
-                          hidden: false,
-                        }}
+                        tooltip={item.title}
                         render={<Link href={item.href} />}
                         onClick={() => setOpen(true)}
                         isActive={isActive}
@@ -163,7 +160,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
 
       {/* Second sidebar — applications list panel (desktop only, only on applications route) */}
       {showApplicationsPanel && (
-        <Sidebar collapsible="none" className="hidden flex-1 md:flex overflow-hidden w-auto!">
+        <Sidebar collapsible="none" className="hidden flex-1 md:flex overflow-hidden !w-auto">
           <SidebarHeader className="gap-3.5 border-b p-4">
             <div className="flex w-full items-center justify-between">
               <div className="text-base font-medium text-foreground">
