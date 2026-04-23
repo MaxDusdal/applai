@@ -1,11 +1,7 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { useRouter } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,40 +10,40 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { ChevronsUpDownIcon, BadgeCheckIcon, LogOutIcon } from "lucide-react"
-import { authClient } from "@/server/better-auth/client"
+} from "@/components/ui/sidebar";
+import { ChevronsUpDownIcon, BadgeCheckIcon, LogOutIcon } from "lucide-react";
+import { authClient } from "@/server/better-auth/client";
 
 function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/)
+  const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) {
-    return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase()
+    return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase();
   }
-  return (parts[0]?.[0] ?? "?").toUpperCase()
+  return (parts[0]?.[0] ?? "?").toUpperCase();
 }
 
 export function NavUser({
   user,
 }: {
   user: {
-    name: string
-    email: string
-    image: string | null
-  }
+    name: string;
+    email: string;
+    image: string | null;
+  };
 }) {
-  const { isMobile } = useSidebar()
-  const router = useRouter()
+  const { isMobile } = useSidebar();
+  const router = useRouter();
 
   const handleSignOut = async () => {
-    await authClient.signOut()
-    router.push("/")
-  }
+    await authClient.signOut();
+    router.push("/");
+  };
 
   return (
     <SidebarMenu>
@@ -57,13 +53,15 @@ export function NavUser({
             render={
               <SidebarMenuButton
                 size="lg"
-                className="md:h-8 md:p-0 data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground"
+                className="data-open:bg-sidebar-accent data-open:text-sidebar-accent-foreground md:h-8 md:p-0"
               />
             }
           >
             <Avatar className="h-8 w-8 rounded-lg">
               <AvatarImage src={user.image ?? undefined} alt={user.name} />
-              <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
+              <AvatarFallback className="rounded-lg">
+                {getInitials(user.name)}
+              </AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{user.name}</span>
@@ -81,7 +79,9 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.image ?? undefined} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">{getInitials(user.name)}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -105,5 +105,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

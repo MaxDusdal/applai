@@ -24,7 +24,9 @@ export function PdfPreview({ source, yamlContent, pdfUrl }: PdfPreviewProps) {
   const [numPages, setNumPages] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const [zoom, setZoom] = useState(1);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
 
   const compileMutation = api.document.compileSource.useMutation({
@@ -151,9 +153,12 @@ export function PdfPreview({ source, yamlContent, pdfUrl }: PdfPreviewProps) {
 
   const file = useMemo(() => (pdfData ? { data: pdfData } : null), [pdfData]);
 
-  const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
-  }, []);
+  const onDocumentLoadSuccess = useCallback(
+    ({ numPages }: { numPages: number }) => {
+      setNumPages(numPages);
+    },
+    [],
+  );
 
   const baseWidth = containerWidth ? containerWidth - 32 : undefined;
 
@@ -222,7 +227,7 @@ export function PdfPreview({ source, yamlContent, pdfUrl }: PdfPreviewProps) {
           <span className="text-muted-foreground text-xs">Recompiling...</span>
         </div>
       )}
-      <div ref={containerRef} className="h-full overflow-auto bg-muted/50">
+      <div ref={containerRef} className="bg-muted/50 h-full overflow-auto">
         <div className="flex flex-col items-center py-4">
           <Document
             file={file}

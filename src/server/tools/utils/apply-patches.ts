@@ -44,7 +44,8 @@ export function applyPatches(content: string, patches: Patch[]): string {
 
     // Exactly one match — replace it
     const idx = result.indexOf(old_string);
-    result = result.slice(0, idx) + new_string + result.slice(idx + old_string.length);
+    result =
+      result.slice(0, idx) + new_string + result.slice(idx + old_string.length);
   }
 
   return result;

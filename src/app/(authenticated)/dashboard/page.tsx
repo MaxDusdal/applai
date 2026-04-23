@@ -17,7 +17,9 @@ export default function DashboardPage() {
 
   usePageContext({ page: "dashboard" });
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (applications.isLoading || !mounted) {
     return (
@@ -41,9 +43,7 @@ export default function DashboardPage() {
         </div>
         <div className="space-y-1">
           <p className="font-medium">
-            {hasApplications
-              ? "Select an application"
-              : "No applications yet"}
+            {hasApplications ? "Select an application" : "No applications yet"}
           </p>
           <p className="text-muted-foreground text-sm">
             {hasApplications

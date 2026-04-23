@@ -12,7 +12,11 @@ type TypstEditorProps = {
   language?: "typst" | "yaml";
 };
 
-export function TypstEditor({ value, onChange, language = "typst" }: TypstEditorProps) {
+export function TypstEditor({
+  value,
+  onChange,
+  language = "typst",
+}: TypstEditorProps) {
   const { resolvedTheme } = useTheme();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,

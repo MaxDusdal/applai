@@ -22,7 +22,12 @@ export async function POST(req: Request) {
 
   const { messages, pageContext, modelId, chatId } = (await req.json()) as {
     messages: UIMessage[];
-    pageContext?: { page: string; applicationId?: string; documentType?: string; documentId?: string };
+    pageContext?: {
+      page: string;
+      applicationId?: string;
+      documentType?: string;
+      documentId?: string;
+    };
     modelId?: string;
     chatId?: string;
   };
@@ -43,9 +48,10 @@ export async function POST(req: Request) {
     "anthropic/claude-opus-4-20250514",
     "anthropic/claude-haiku-4-5-20251001",
   ];
-  const model = modelId && ALLOWED_MODELS.includes(modelId)
-    ? modelId
-    : "anthropic/claude-sonnet-4-20250514";
+  const model =
+    modelId && ALLOWED_MODELS.includes(modelId)
+      ? modelId
+      : "anthropic/claude-sonnet-4-20250514";
 
   // Build a brief context summary so the model knows where the user is
   let contextSummary = "";
@@ -100,28 +106,42 @@ GUIDELINES:
 
         // Fire-and-forget title generation for new chats
         const userMessages = finishedMessages.filter((m) => m.role === "user");
-        const assistantMessages = finishedMessages.filter((m) => m.role === "assistant");
-        if (chat.title === null && userMessages.length >= 1 && assistantMessages.length >= 1) {
+        const assistantMessages = finishedMessages.filter(
+          (m) => m.role === "assistant",
+        );
+        if (
+          chat.title === null &&
+          userMessages.length >= 1 &&
+          assistantMessages.length >= 1
+        ) {
           void (async () => {
             try {
               const firstUser = userMessages[0];
               const firstAssistant = assistantMessages[0];
               const extractText = (msg: UIMessage) =>
                 msg.parts
-                  .filter((p): p is { type: "text"; text: string } => p.type === "text")
+                  .filter(
+                    (p): p is { type: "text"; text: string } =>
+                      p.type === "text",
+                  )
                   .map((p) => p.text)
                   .join(" ")
                   .slice(0, 300);
 
               const userText = firstUser ? extractText(firstUser) : "";
-              const assistantText = firstAssistant ? extractText(firstAssistant) : "";
+              const assistantText = firstAssistant
+                ? extractText(firstAssistant)
+                : "";
 
               const { text } = await generateText({
                 model: "anthropic/claude-haiku-4-5-20251001",
                 prompt: `Summarize this conversation exchange in 3-5 words, no punctuation, no quotes:\nUser: ${userText}\nAssistant: ${assistantText}`,
                 maxOutputTokens: 20,
               });
-              const title = text.trim().replace(/[.,"'!?;:]+$/, "").slice(0, 60);
+              const title = text
+                .trim()
+                .replace(/[.,"'!?;:]+$/, "")
+                .slice(0, 60);
               if (title) {
                 await chatService.setTitleIfEmpty(userId, chatId, title);
               }

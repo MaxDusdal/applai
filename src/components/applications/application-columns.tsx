@@ -5,9 +5,11 @@ import type { Application } from "@prisma/client";
 import { StatusBadge } from "@/components/applications/status-badge";
 
 function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(
-    new Date(date),
-  );
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(date));
 }
 
 export const applicationColumns: ColumnDef<Application>[] = [
@@ -22,7 +24,9 @@ export const applicationColumns: ColumnDef<Application>[] = [
     accessorKey: "role",
     header: "Role",
     cell: ({ row }) => (
-      <span className="text-muted-foreground">{row.getValue<string>("role")}</span>
+      <span className="text-muted-foreground">
+        {row.getValue<string>("role")}
+      </span>
     ),
   },
   {

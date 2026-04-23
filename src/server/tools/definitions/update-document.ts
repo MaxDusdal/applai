@@ -12,7 +12,9 @@ export const updateDocument = defineTool({
       documentId: z
         .string()
         .optional()
-        .describe("Specific document ID (preferred when multiple docs of the same type exist)"),
+        .describe(
+          "Specific document ID (preferred when multiple docs of the same type exist)",
+        ),
       type: z
         .enum(["CV", "COVER_LETTER", "ADDITIONAL"])
         .optional()
@@ -24,11 +26,16 @@ export const updateDocument = defineTool({
       typstSource: z
         .string()
         .optional()
-        .describe("Updated Typst layout source (only when changing the template itself)"),
+        .describe(
+          "Updated Typst layout source (only when changing the template itself)",
+        ),
     })
     .refine((d) => d.documentId ?? d.type, "Provide documentId or type"),
   needsApproval: true,
-  execute: async ({ applicationId, documentId, type, yamlContent, typstSource }, ctx) => {
+  execute: async (
+    { applicationId, documentId, type, yamlContent, typstSource },
+    ctx,
+  ) => {
     const service = new DocumentService(ctx.db);
 
     let doc;
@@ -45,10 +52,18 @@ export const updateDocument = defineTool({
 
     if (!doc) {
       // Create new document if not found (only for type-based lookup)
-      if (!type) return { error: "Document not found. Provide a valid documentId or type." };
+      if (!type)
+        return {
+          error: "Document not found. Provide a valid documentId or type.",
+        };
       doc = await service.create(ctx.userId, applicationId, {
         type,
-        name: type === "CV" ? "CV" : type === "COVER_LETTER" ? "Cover Letter" : "Document",
+        name:
+          type === "CV"
+            ? "CV"
+            : type === "COVER_LETTER"
+              ? "Cover Letter"
+              : "Document",
         source: typstSource ?? "",
         yamlContent,
       });

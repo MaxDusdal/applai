@@ -17,9 +17,8 @@ export interface ToolDefinition<
   execute: (input: z.infer<TInput>, ctx: ToolContext) => Promise<TOutput>;
 }
 
-export function defineTool<
-  TInput extends z.ZodTypeAny,
-  TOutput = unknown,
->(definition: ToolDefinition<TInput, TOutput>) {
+export function defineTool<TInput extends z.ZodTypeAny, TOutput = unknown>(
+  definition: ToolDefinition<TInput, TOutput>,
+) {
   return definition;
 }

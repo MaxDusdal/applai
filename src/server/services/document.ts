@@ -91,8 +91,12 @@ export class DocumentService {
         data: {
           previousSource: current.source || null,
           source: data.source,
-          ...(data.yamlContent !== undefined && { yamlContent: data.yamlContent }),
-          ...(data.chatHistory !== undefined && { chatHistory: data.chatHistory }),
+          ...(data.yamlContent !== undefined && {
+            yamlContent: data.yamlContent,
+          }),
+          ...(data.chatHistory !== undefined && {
+            chatHistory: data.chatHistory,
+          }),
         },
       });
     }
@@ -100,8 +104,12 @@ export class DocumentService {
     return this.db.document.update({
       where: { id },
       data: {
-        ...(data.yamlContent !== undefined && { yamlContent: data.yamlContent }),
-        ...(data.chatHistory !== undefined && { chatHistory: data.chatHistory }),
+        ...(data.yamlContent !== undefined && {
+          yamlContent: data.yamlContent,
+        }),
+        ...(data.chatHistory !== undefined && {
+          chatHistory: data.chatHistory,
+        }),
       },
     });
   }
