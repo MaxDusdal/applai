@@ -378,7 +378,7 @@ export default function ApplicationDetailPage({
   return (
     <div className="flex h-full flex-col">
       {/* Header with inline-editable company/role + status */}
-      <div className="shrink-0 border-b px-6 py-3 space-y-2">
+      <div className="shrink-0 space-y-2 border-b px-6 py-3">
         {/* Row 1: back, company/role, delete */}
         <div className="flex items-center gap-3">
           <Button
@@ -448,7 +448,7 @@ export default function ApplicationDetailPage({
         </div>
 
         {/* Row 2: status stepper */}
-        <div className="pl-11 overflow-x-auto">
+        <div className="overflow-x-auto pl-11">
           <StatusStepper
             status={app.status}
             onChange={handleStatusChange}

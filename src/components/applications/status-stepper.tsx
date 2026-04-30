@@ -22,8 +22,13 @@ type StatusStepperProps = {
   disabled?: boolean;
 };
 
-export function StatusStepper({ status, onChange, disabled }: StatusStepperProps) {
-  const [pendingPopover, setPendingPopover] = useState<ApplicationStatus | null>(null);
+export function StatusStepper({
+  status,
+  onChange,
+  disabled,
+}: StatusStepperProps) {
+  const [pendingPopover, setPendingPopover] =
+    useState<ApplicationStatus | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isTerminal = !PIPELINE_STAGES.includes(status);
@@ -54,7 +59,10 @@ export function StatusStepper({ status, onChange, disabled }: StatusStepperProps
   }, [disabled, onChange]);
 
   return (
-    <div ref={containerRef} className="relative flex items-center gap-2 flex-wrap">
+    <div
+      ref={containerRef}
+      className="relative flex flex-wrap items-center gap-2"
+    >
       {/* Pipeline steps */}
       <div className="flex items-center">
         {PIPELINE_STAGES.map((stage, i) => {
@@ -82,24 +90,30 @@ export function StatusStepper({ status, onChange, disabled }: StatusStepperProps
               <button
                 onClick={() => handleStepClick(stage)}
                 disabled={isDisabled}
-                title={isCurrent ? stageConfig.label : `Move to ${stageConfig.label}`}
+                title={
+                  isCurrent ? stageConfig.label : `Move to ${stageConfig.label}`
+                }
                 className={cn(
-                  "group relative flex flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "group focus-visible:ring-ring relative flex flex-col items-center gap-0.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-all focus-visible:ring-2 focus-visible:outline-none",
                   !isDisabled && "cursor-pointer",
                   isDisabled && "cursor-default",
                   // Past: subtle green, clickable to revert
-                  isPast && !isDisabled &&
-                    "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30",
-                  isPast && isDisabled && "text-emerald-600 dark:text-emerald-400",
+                  isPast &&
+                    !isDisabled &&
+                    "text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/30",
+                  isPast &&
+                    isDisabled &&
+                    "text-emerald-600 dark:text-emerald-400",
                   // Current: highlighted with ring
                   isCurrent &&
                     cn(
                       "ring-1 ring-inset",
                       stageConfig.activeColor,
-                      "ring-current/30 bg-muted/60",
+                      "bg-muted/60 ring-current/30",
                     ),
                   // Future: muted, advances on click
-                  isFuture && !isDisabled &&
+                  isFuture &&
+                    !isDisabled &&
                     "text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50",
                   isFuture && isDisabled && "text-muted-foreground/40",
                 )}
@@ -120,7 +134,7 @@ export function StatusStepper({ status, onChange, disabled }: StatusStepperProps
       </div>
 
       {/* Separator */}
-      <div className="h-4 w-px bg-border/50 shrink-0" />
+      <div className="bg-border/50 h-4 w-px shrink-0" />
 
       {/* Terminal state buttons */}
       {isTerminal ? (
@@ -143,7 +157,7 @@ export function StatusStepper({ status, onChange, disabled }: StatusStepperProps
             <button
               onClick={handleRestore}
               title="Move back to Applied"
-              className="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center gap-1 rounded-md px-1.5 py-1 text-xs transition-colors"
             >
               <RotateCcw className="h-3 w-3" />
               <span>Undo</span>
