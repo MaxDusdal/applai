@@ -90,46 +90,58 @@ export class DocumentService {
       throw new Error("Uploaded PDF documents cannot be edited.");
     }
 
-    // Version snapshot logic
+    // Version snapshot logic + update in a single transaction
     const hasContent =
       (current.source && current.source.length > 0) ||
       (current.yamlContent && current.yamlContent.length > 0);
 
+    const updateData = {
+      ...(data.source !== undefined && { source: data.source }),
+      ...(data.yamlContent !== undefined && {
+        yamlContent: data.yamlContent,
+      }),
+      ...(data.chatHistory !== undefined && {
+        chatHistory: data.chatHistory,
+      }),
+    };
+
     if (hasContent) {
       const versionService = new DocumentVersionService(this.db);
 
+      let shouldCreateSnapshot = false;
+      let snapshotTrigger: VersionTrigger = "AUTO";
+      let snapshotLabel: string | undefined;
+
       if (opts?.trigger) {
-        // Explicit trigger (e.g. AI_EDIT) — always snapshot
-        await versionService.createVersion(id, {
-          source: current.source,
-          yamlContent: current.yamlContent,
-          trigger: opts.trigger,
-          label: opts.versionLabel,
-        });
+        shouldCreateSnapshot = true;
+        snapshotTrigger = opts.trigger;
+        snapshotLabel = opts.versionLabel;
       } else {
-        // Auto-snapshot if enough time has passed
-        const shouldSnapshot = await versionService.shouldAutoSnapshot(id);
-        if (shouldSnapshot) {
-          await versionService.createVersion(id, {
+        shouldCreateSnapshot = await versionService.shouldAutoSnapshot(id);
+      }
+
+      if (shouldCreateSnapshot) {
+        return this.db.$transaction(async (tx) => {
+          const txVersionService = new DocumentVersionService(
+            tx as unknown as DbClient,
+          );
+          await txVersionService.createVersion(id, {
             source: current.source,
             yamlContent: current.yamlContent,
-            trigger: "AUTO",
+            trigger: snapshotTrigger,
+            label: snapshotLabel,
           });
-        }
+          return tx.document.update({
+            where: { id },
+            data: updateData,
+          });
+        });
       }
     }
 
     return this.db.document.update({
       where: { id },
-      data: {
-        ...(data.source !== undefined && { source: data.source }),
-        ...(data.yamlContent !== undefined && {
-          yamlContent: data.yamlContent,
-        }),
-        ...(data.chatHistory !== undefined && {
-          chatHistory: data.chatHistory,
-        }),
-      },
+      data: updateData,
     });
   }
 

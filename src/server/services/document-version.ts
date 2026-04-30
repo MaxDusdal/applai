@@ -1,9 +1,11 @@
 import type { db } from "@/server/db";
 import type { VersionTrigger } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 type DbClient = typeof db;
 
 const AUTO_SNAPSHOT_GAP_MS = 5 * 60 * 1000; // 5 minutes
+const MAX_VERSION_RETRIES = 3;
 
 export class DocumentVersionService {
   constructor(private db: DbClient) {}
@@ -17,18 +19,32 @@ export class DocumentVersionService {
       label?: string;
     },
   ) {
-    const nextVersion = await this.getNextVersionNumber(documentId);
-
-    return this.db.documentVersion.create({
-      data: {
-        documentId,
-        version: nextVersion,
-        source: data.source,
-        yamlContent: data.yamlContent,
-        trigger: data.trigger,
-        label: data.label,
-      },
-    });
+    for (let attempt = 0; attempt < MAX_VERSION_RETRIES; attempt++) {
+      const nextVersion = await this.getNextVersionNumber(documentId);
+      try {
+        return await this.db.documentVersion.create({
+          data: {
+            documentId,
+            version: nextVersion,
+            source: data.source,
+            yamlContent: data.yamlContent,
+            trigger: data.trigger,
+            label: data.label,
+          },
+        });
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002" &&
+          attempt < MAX_VERSION_RETRIES - 1
+        ) {
+          // Unique constraint violation on (documentId, version) — retry
+          continue;
+        }
+        throw error;
+      }
+    }
+    throw new Error("Failed to allocate version number after retries");
   }
 
   async listVersions(
