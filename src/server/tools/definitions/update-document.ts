@@ -77,10 +77,15 @@ export const updateDocument = defineTool({
       };
     }
 
-    await service.update(ctx.userId, doc.id, {
-      ...(yamlContent !== undefined && { yamlContent }),
-      ...(typstSource !== undefined && { source: typstSource }),
-    });
+    await service.update(
+      ctx.userId,
+      doc.id,
+      {
+        ...(yamlContent !== undefined && { yamlContent }),
+        ...(typstSource !== undefined && { source: typstSource }),
+      },
+      { trigger: "AI_EDIT", versionLabel: "Before AI edit" },
+    );
     return { success: true, documentId: doc.id };
   },
 });

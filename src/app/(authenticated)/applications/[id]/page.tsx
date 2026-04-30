@@ -6,7 +6,7 @@ import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import { InlineInput } from "@/components/ui/inline-input";
 import { Textarea } from "@/components/ui/textarea";
-import { APPLICATION_STATUS_OPTIONS } from "@/components/applications/status-badge";
+import { StatusStepper } from "@/components/applications/status-stepper";
 import { CreateDocumentDialog } from "@/components/documents/create-document-dialog";
 import {
   ArrowLeft,
@@ -94,26 +94,59 @@ export default function ApplicationDetailPage({
     onMutate: async (variables) => {
       // Cancel outgoing fetches so they don't overwrite our optimistic value
       await utils.application.get.cancel({ id });
-      const previous = utils.application.get.getData({ id });
-      if (previous) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id: _id, ...fields } = variables;
+      await utils.application.list.cancel();
+      const previousGet = utils.application.get.getData({ id });
+      const previousList = utils.application.list.getData();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id: _id, ...fields } = variables;
+      if (previousGet) {
         utils.application.get.setData(
           { id },
-          { ...previous, ...fields, updatedAt: new Date() },
+          { ...previousGet, ...fields, updatedAt: new Date() },
         );
       }
-      return { previous };
+      if (previousList) {
+        utils.application.list.setData(
+          undefined,
+          previousList.map((app) =>
+            app.id === id ? { ...app, ...fields, updatedAt: new Date() } : app,
+          ),
+        );
+      }
+      return { previousGet, previousList };
     },
     onError: (_err, _variables, context) => {
-      if (context?.previous) {
-        utils.application.get.setData({ id }, context.previous);
+      if (context?.previousGet) {
+        utils.application.get.setData({ id }, context.previousGet);
+      }
+      if (context?.previousList) {
+        utils.application.list.setData(undefined, context.previousList);
       }
     },
-    onSettled: () => void utils.application.get.invalidate({ id }),
+    onSettled: () => {
+      void utils.application.get.invalidate({ id });
+      void utils.application.list.invalidate();
+    },
   });
   const deleteMutation = api.application.delete.useMutation({
+    onMutate: async () => {
+      await utils.application.list.cancel();
+      const previousList = utils.application.list.getData();
+      if (previousList) {
+        utils.application.list.setData(
+          undefined,
+          previousList.filter((app) => app.id !== id),
+        );
+      }
+      return { previousList };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousList) {
+        utils.application.list.setData(undefined, context.previousList);
+      }
+    },
     onSuccess: () => router.push("/dashboard"),
+    onSettled: () => void utils.application.list.invalidate(),
   });
   const createMetaMutation = api.application.createMeta.useMutation({
     onSuccess: () => void utils.application.get.invalidate({ id }),
@@ -233,9 +266,93 @@ export default function ApplicationDetailPage({
 
   if (application.isLoading) {
     return (
-      <div className="animate-pulse space-y-4 p-6">
-        <div className="bg-muted h-8 w-48 rounded" />
-        <div className="bg-muted h-48 rounded-2xl" />
+      <div className="flex h-full flex-col">
+        {/* Header skeleton */}
+        <div className="flex shrink-0 items-center gap-3 border-b px-6 py-3">
+          <div className="bg-muted h-8 w-8 animate-pulse rounded-md" />
+          <div className="flex flex-1 flex-col gap-1.5">
+            <div className="bg-muted h-4 w-32 animate-pulse rounded" />
+            <div className="bg-muted h-3 w-48 animate-pulse rounded" />
+          </div>
+          <div className="bg-muted h-7 w-24 animate-pulse rounded-2xl" />
+        </div>
+
+        {/* Nav skeleton */}
+        <div className="flex shrink-0 gap-4 border-b px-6 py-2.5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-muted h-4 animate-pulse rounded"
+              style={{ width: `${[60, 92, 56, 76][i]}px` }}
+            />
+          ))}
+        </div>
+
+        {/* Content skeleton */}
+        <div className="flex-1 space-y-10 overflow-y-auto px-6 py-8">
+          {/* Metadata */}
+          <div className="space-y-3">
+            <div className="bg-muted h-4 w-20 animate-pulse rounded" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-6">
+                <div className="bg-muted h-3 w-24 animate-pulse rounded" />
+                <div className="bg-muted h-3 flex-1 animate-pulse rounded" />
+              </div>
+            ))}
+          </div>
+
+          <hr className="border-border -mx-6" />
+
+          {/* Job description */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="bg-muted h-4 w-32 animate-pulse rounded" />
+              <div className="bg-muted h-6 w-14 animate-pulse rounded-md" />
+            </div>
+            <div className="bg-muted h-40 animate-pulse rounded-xl" />
+          </div>
+
+          <hr className="border-border -mx-6" />
+
+          {/* Activity */}
+          <div className="space-y-4">
+            <div className="bg-muted h-4 w-16 animate-pulse rounded" />
+            <div className="border-border ml-2 space-y-4 border-l pl-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="space-y-1.5">
+                  <div className="bg-muted h-3 w-2/3 animate-pulse rounded" />
+                  <div className="bg-muted h-2.5 w-24 animate-pulse rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <hr className="border-border -mx-6" />
+
+          {/* Documents */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1.5">
+                <div className="bg-muted h-4 w-24 animate-pulse rounded" />
+                <div className="bg-muted h-3 w-56 animate-pulse rounded" />
+              </div>
+              <div className="bg-muted h-8 w-28 animate-pulse rounded-md" />
+            </div>
+            <div className="-mx-6 border-y">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-4 border-b px-6 py-3 last:border-0"
+                >
+                  <div className="bg-muted h-4 flex-1 animate-pulse rounded" />
+                  <div className="bg-muted h-5 w-20 animate-pulse rounded-full" />
+                  <div className="bg-muted h-3 w-16 animate-pulse rounded" />
+                  <div className="bg-muted h-3 w-28 animate-pulse rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -261,16 +378,17 @@ export default function ApplicationDetailPage({
   return (
     <div className="flex h-full flex-col">
       {/* Header with inline-editable company/role + status */}
-      <div className="flex shrink-0 items-center gap-3 border-b px-6 py-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push("/dashboard")}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+      <div className="shrink-0 space-y-2 border-b px-6 py-3">
+        {/* Row 1: back, company/role, delete */}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/dashboard")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
 
-        <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="min-w-0 flex-1">
             {/* Company — inline edit */}
             {editing === "company" ? (
@@ -315,34 +433,28 @@ export default function ApplicationDetailPage({
             )}
           </div>
 
-          {/* Status — inline select */}
-          <select
-            value={app.status}
-            onChange={(e) =>
-              handleStatusChange(e.target.value as ApplicationStatus)
-            }
-            className="bg-input/50 text-foreground focus:ring-ring/30 shrink-0 rounded-2xl border-0 px-3 py-1.5 text-sm focus:ring-2 focus:outline-none"
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive hover:text-destructive"
+            onClick={() => {
+              if (confirm("Delete this application?")) {
+                deleteMutation.mutate({ id });
+              }
+            }}
           >
-            {APPLICATION_STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive hover:text-destructive"
-          onClick={() => {
-            if (confirm("Delete this application?")) {
-              deleteMutation.mutate({ id });
-            }
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        {/* Row 2: status stepper */}
+        <div className="overflow-x-auto pl-11">
+          <StatusStepper
+            status={app.status}
+            onChange={handleStatusChange}
+            disabled={updateMutation.isPending}
+          />
+        </div>
       </div>
 
       {/* Section nav */}

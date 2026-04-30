@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Application, ApplicationStatus } from "@prisma/client";
 import { APPLICATION_STATUS_OPTIONS } from "@/components/applications/status-badge";
+import { CompanyLogo } from "@/components/company-logo";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
@@ -195,23 +196,18 @@ function ApplicationCard({ app }: { app: ApplicationWithRelations }) {
     "division",
   ]);
 
-  const initials = app.company
-    .split(" ")
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
-
   return (
     <div
       onClick={() => router.push(`/applications/${app.id}`)}
       className="group bg-card hover:border-ring/50 cursor-pointer rounded-2xl border p-5 transition-all duration-150 hover:shadow-sm"
     >
       <div className="flex items-start gap-4">
-        {/* Logo / initials */}
-        <div className="bg-muted text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-semibold select-none">
-          {initials}
-        </div>
+        <CompanyLogo
+          company={app.company}
+          domain={app.domain}
+          size={40}
+          className="rounded-xl select-none"
+        />
 
         <div className="min-w-0 flex-1">
           {/* Header row */}

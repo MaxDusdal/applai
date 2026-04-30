@@ -20,6 +20,7 @@ type ParseResult = {
   company: string;
   role: string;
   jobDescription: string;
+  domain?: string;
   metadata: { key: string; value: string }[];
 };
 
@@ -132,6 +133,7 @@ export function NewApplicationDialog({
       company: parsed.company,
       role: parsed.role,
       jobDescription: parsed.jobDescription || undefined,
+      domain: parsed.domain,
       metadata: parsed.metadata.length > 0 ? parsed.metadata : undefined,
     });
   }

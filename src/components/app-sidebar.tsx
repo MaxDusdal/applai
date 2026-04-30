@@ -7,6 +7,7 @@ import { usePathname, useParams } from "next/navigation";
 import { NavUser } from "@/components/nav-user";
 import { StatusBadge } from "@/components/applications/status-badge";
 import { NewApplicationDialog } from "@/components/applications/new-application-dialog";
+import { CompanyLogo } from "@/components/company-logo";
 import {
   Sidebar,
   SidebarContent,
@@ -251,12 +252,6 @@ function ApplicationListPanel({
     <>
       {filtered.map((app) => {
         const isActive = app.id === activeApplicationId;
-        const initials = app.company
-          .split(" ")
-          .slice(0, 2)
-          .map((w) => w[0])
-          .join("")
-          .toUpperCase();
 
         return (
           <Link
@@ -266,9 +261,12 @@ function ApplicationListPanel({
               isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : ""
             }`}
           >
-            <div className="bg-muted text-muted-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-semibold">
-              {initials}
-            </div>
+            <CompanyLogo
+              company={app.company}
+              domain={app.domain}
+              size={32}
+              className="rounded-lg"
+            />
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate font-medium">{app.company}</span>

@@ -1,6 +1,7 @@
 import type { db } from "@/server/db";
-import type { DocumentType, Prisma } from "@prisma/client";
+import type { DocumentType, Prisma, VersionTrigger } from "@prisma/client";
 import { PdfUploadService } from "./pdf-upload";
+import { DocumentVersionService } from "./document-version";
 
 type DbClient = typeof db;
 
@@ -75,42 +76,72 @@ export class DocumentService {
       yamlContent?: string;
       chatHistory?: Prisma.InputJsonValue;
     },
+    opts?: {
+      trigger?: VersionTrigger;
+      versionLabel?: string;
+    },
   ) {
     const current = await this.db.document.findFirst({
       where: { id, userId },
-      select: { source: true, isUploadedPdf: true },
+      select: { source: true, yamlContent: true, isUploadedPdf: true },
     });
     if (!current) throw new Error("Not found");
     if (current.isUploadedPdf) {
       throw new Error("Uploaded PDF documents cannot be edited.");
     }
 
-    if (data.source !== undefined) {
-      return this.db.document.update({
-        where: { id },
-        data: {
-          previousSource: current.source || null,
-          source: data.source,
-          ...(data.yamlContent !== undefined && {
-            yamlContent: data.yamlContent,
-          }),
-          ...(data.chatHistory !== undefined && {
-            chatHistory: data.chatHistory,
-          }),
-        },
-      });
+    // Version snapshot logic + update in a single transaction
+    const hasContent =
+      (current.source && current.source.length > 0) ||
+      (current.yamlContent && current.yamlContent.length > 0);
+
+    const updateData = {
+      ...(data.source !== undefined && { source: data.source }),
+      ...(data.yamlContent !== undefined && {
+        yamlContent: data.yamlContent,
+      }),
+      ...(data.chatHistory !== undefined && {
+        chatHistory: data.chatHistory,
+      }),
+    };
+
+    if (hasContent) {
+      const versionService = new DocumentVersionService(this.db);
+
+      let shouldCreateSnapshot = false;
+      let snapshotTrigger: VersionTrigger = "AUTO";
+      let snapshotLabel: string | undefined;
+
+      if (opts?.trigger) {
+        shouldCreateSnapshot = true;
+        snapshotTrigger = opts.trigger;
+        snapshotLabel = opts.versionLabel;
+      } else {
+        shouldCreateSnapshot = await versionService.shouldAutoSnapshot(id);
+      }
+
+      if (shouldCreateSnapshot) {
+        return this.db.$transaction(async (tx) => {
+          const txVersionService = new DocumentVersionService(
+            tx as unknown as DbClient,
+          );
+          await txVersionService.createVersion(id, {
+            source: current.source,
+            yamlContent: current.yamlContent,
+            trigger: snapshotTrigger,
+            label: snapshotLabel,
+          });
+          return tx.document.update({
+            where: { id },
+            data: updateData,
+          });
+        });
+      }
     }
 
     return this.db.document.update({
       where: { id },
-      data: {
-        ...(data.yamlContent !== undefined && {
-          yamlContent: data.yamlContent,
-        }),
-        ...(data.chatHistory !== undefined && {
-          chatHistory: data.chatHistory,
-        }),
-      },
+      data: updateData,
     });
   }
 

@@ -1,3 +1,4 @@
+import type React from "react";
 import { redirect } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -32,10 +33,10 @@ export default async function AuthenticatedLayout({
     >
       <AppSidebar user={user} />
       <AgentProvider>
-        <main className="flex flex-1 flex-col overflow-hidden">
+        <main className="flex h-svh min-w-0 flex-1 flex-col overflow-hidden">
           <AuthenticatedHeader />
           <div className="flex min-h-0 flex-1 overflow-hidden">
-            <div className="flex flex-1 flex-col overflow-hidden">
+            <div className="flex min-w-0 flex-1 flex-col overflow-y-auto">
               {children}
             </div>
             <AgentPanel />
