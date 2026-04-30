@@ -67,41 +67,136 @@ export default function DocumentEditorPage({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [saveVersionOpen, setSaveVersionOpen] = useState(false);
   const initialized = useRef(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const currentContentRef = useRef<{
+    source: string | null;
+    yamlContent: string | null;
+  }>({
+    source: null,
+    yamlContent: null,
+  });
+  const lastPersistedContentRef = useRef<{
+    source: string | null;
+    yamlContent: string | null;
+  }>({
+    source: null,
+    yamlContent: null,
+  });
+  const saveSequenceRef = useRef(0);
+  const appliedSaveSequenceRef = useRef(0);
+  const saveChainRef = useRef<Promise<void>>(Promise.resolve());
 
   useEffect(() => {
     if (document.data && !initialized.current) {
-      setSource(document.data.source);
-      setYamlContent(document.data.yamlContent ?? null);
+      const nextContent = {
+        source: document.data.source,
+        yamlContent: document.data.yamlContent ?? null,
+      };
+      setSource(nextContent.source);
+      setYamlContent(nextContent.yamlContent);
+      currentContentRef.current = nextContent;
+      lastPersistedContentRef.current = nextContent;
       initialized.current = true;
     }
   }, [document.data]);
 
   useEffect(() => {
     if (document.data && initialized.current) {
-      setSource(document.data.source);
-      setYamlContent(document.data.yamlContent ?? null);
+      const nextContent = {
+        source: document.data.source,
+        yamlContent: document.data.yamlContent ?? null,
+      };
+      setSource(nextContent.source);
+      setYamlContent(nextContent.yamlContent);
+      currentContentRef.current = nextContent;
+      lastPersistedContentRef.current = nextContent;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [document.data?.updatedAt]);
 
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, []);
+
+  const persistCurrentContent = useCallback(async () => {
+    const documentId = document.data?.id;
+    if (!documentId) return;
+
+    const snapshot = { ...currentContentRef.current };
+    const lastPersisted = lastPersistedContentRef.current;
+    if (
+      snapshot.source === lastPersisted.source &&
+      snapshot.yamlContent === lastPersisted.yamlContent
+    ) {
+      return;
+    }
+
+    const seq = ++saveSequenceRef.current;
+    const runSave = async () => {
+      await updateMutation.mutateAsync({
+        id: documentId,
+        ...(snapshot.source !== null && { source: snapshot.source }),
+        ...(snapshot.yamlContent !== null && {
+          yamlContent: snapshot.yamlContent,
+        }),
+      });
+
+      if (seq >= appliedSaveSequenceRef.current) {
+        appliedSaveSequenceRef.current = seq;
+        lastPersistedContentRef.current = snapshot;
+      }
+    };
+
+    const pendingSave = saveChainRef.current.then(runSave, runSave);
+    saveChainRef.current = pendingSave.then(
+      () => undefined,
+      () => undefined,
+    );
+    await pendingSave;
+  }, [document.data?.id, updateMutation]);
+
+  const queuePersistCurrentContent = useCallback(() => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      saveTimerRef.current = undefined;
+      void persistCurrentContent();
+    }, 600);
+  }, [persistCurrentContent]);
+
+  const flushPendingEdits = useCallback(async () => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = undefined;
+    }
+    await persistCurrentContent();
+  }, [persistCurrentContent]);
+
   const handleSourceChange = useCallback(
     (newSource: string) => {
       setSource(newSource);
-      if (document.data?.id) {
-        updateMutation.mutate({ id: document.data.id, source: newSource });
-      }
+      currentContentRef.current = {
+        ...currentContentRef.current,
+        source: newSource,
+      };
+      queuePersistCurrentContent();
     },
-    [document.data?.id, updateMutation],
+    [queuePersistCurrentContent],
   );
 
   const handleYamlChange = useCallback(
     (newYaml: string) => {
       setYamlContent(newYaml);
-      if (document.data?.id) {
-        updateMutation.mutate({ id: document.data.id, yamlContent: newYaml });
-      }
+      currentContentRef.current = {
+        ...currentContentRef.current,
+        yamlContent: newYaml,
+      };
+      queuePersistCurrentContent();
     },
-    [document.data?.id, updateMutation],
+    [queuePersistCurrentContent],
   );
 
   const handleDownload = useCallback(() => {
@@ -385,11 +480,13 @@ export default function DocumentEditorPage({
             documentId={doc.id}
             open={historyOpen}
             onOpenChange={setHistoryOpen}
+            beforeRestore={flushPendingEdits}
           />
           <SaveVersionDialog
             documentId={doc.id}
             open={saveVersionOpen}
             onOpenChange={setSaveVersionOpen}
+            beforeSave={flushPendingEdits}
           />
         </>
       )}

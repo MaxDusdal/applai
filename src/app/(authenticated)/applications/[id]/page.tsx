@@ -6,7 +6,7 @@ import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 import { InlineInput } from "@/components/ui/inline-input";
 import { Textarea } from "@/components/ui/textarea";
-import { APPLICATION_STATUS_OPTIONS } from "@/components/applications/status-badge";
+import { StatusStepper } from "@/components/applications/status-stepper";
 import { CreateDocumentDialog } from "@/components/documents/create-document-dialog";
 import {
   ArrowLeft,
@@ -94,26 +94,59 @@ export default function ApplicationDetailPage({
     onMutate: async (variables) => {
       // Cancel outgoing fetches so they don't overwrite our optimistic value
       await utils.application.get.cancel({ id });
-      const previous = utils.application.get.getData({ id });
-      if (previous) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id: _id, ...fields } = variables;
+      await utils.application.list.cancel();
+      const previousGet = utils.application.get.getData({ id });
+      const previousList = utils.application.list.getData();
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id: _id, ...fields } = variables;
+      if (previousGet) {
         utils.application.get.setData(
           { id },
-          { ...previous, ...fields, updatedAt: new Date() },
+          { ...previousGet, ...fields, updatedAt: new Date() },
         );
       }
-      return { previous };
+      if (previousList) {
+        utils.application.list.setData(
+          undefined,
+          previousList.map((app) =>
+            app.id === id ? { ...app, ...fields, updatedAt: new Date() } : app,
+          ),
+        );
+      }
+      return { previousGet, previousList };
     },
     onError: (_err, _variables, context) => {
-      if (context?.previous) {
-        utils.application.get.setData({ id }, context.previous);
+      if (context?.previousGet) {
+        utils.application.get.setData({ id }, context.previousGet);
+      }
+      if (context?.previousList) {
+        utils.application.list.setData(undefined, context.previousList);
       }
     },
-    onSettled: () => void utils.application.get.invalidate({ id }),
+    onSettled: () => {
+      void utils.application.get.invalidate({ id });
+      void utils.application.list.invalidate();
+    },
   });
   const deleteMutation = api.application.delete.useMutation({
+    onMutate: async () => {
+      await utils.application.list.cancel();
+      const previousList = utils.application.list.getData();
+      if (previousList) {
+        utils.application.list.setData(
+          undefined,
+          previousList.filter((app) => app.id !== id),
+        );
+      }
+      return { previousList };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousList) {
+        utils.application.list.setData(undefined, context.previousList);
+      }
+    },
     onSuccess: () => router.push("/dashboard"),
+    onSettled: () => void utils.application.list.invalidate(),
   });
   const createMetaMutation = api.application.createMeta.useMutation({
     onSuccess: () => void utils.application.get.invalidate({ id }),
@@ -345,16 +378,17 @@ export default function ApplicationDetailPage({
   return (
     <div className="flex h-full flex-col">
       {/* Header with inline-editable company/role + status */}
-      <div className="flex shrink-0 items-center gap-3 border-b px-6 py-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push("/dashboard")}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+      <div className="shrink-0 border-b px-6 py-3 space-y-2">
+        {/* Row 1: back, company/role, delete */}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/dashboard")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
 
-        <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="min-w-0 flex-1">
             {/* Company — inline edit */}
             {editing === "company" ? (
@@ -399,34 +433,28 @@ export default function ApplicationDetailPage({
             )}
           </div>
 
-          {/* Status — inline select */}
-          <select
-            value={app.status}
-            onChange={(e) =>
-              handleStatusChange(e.target.value as ApplicationStatus)
-            }
-            className="bg-input/50 text-foreground focus:ring-ring/30 shrink-0 rounded-2xl border-0 px-3 py-1.5 text-sm focus:ring-2 focus:outline-none"
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-destructive hover:text-destructive"
+            onClick={() => {
+              if (confirm("Delete this application?")) {
+                deleteMutation.mutate({ id });
+              }
+            }}
           >
-            {APPLICATION_STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive hover:text-destructive"
-          onClick={() => {
-            if (confirm("Delete this application?")) {
-              deleteMutation.mutate({ id });
-            }
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        {/* Row 2: status stepper */}
+        <div className="pl-11 overflow-x-auto">
+          <StatusStepper
+            status={app.status}
+            onChange={handleStatusChange}
+            disabled={updateMutation.isPending}
+          />
+        </div>
       </div>
 
       {/* Section nav */}

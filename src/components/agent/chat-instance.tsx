@@ -151,8 +151,8 @@ function ChatInstanceInner({
             </ConversationEmptyState>
           )}
 
-          {messages.map((message) => (
-            <Message key={message.id} from={message.role}>
+          {messages.map((message, i) => (
+            <Message key={message.id || i} from={message.role}>
               <MessageContent>
                 {message.parts.map((part, i) => {
                   if (part.type === "text") {

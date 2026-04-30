@@ -34,6 +34,7 @@ export default function RootLayout({
         dmSans.variable,
         geistHeading.variable,
       )}
+      suppressHydrationWarning
     >
       <body>
         <TRPCReactProvider>

@@ -2,28 +2,6 @@ import { env } from "@/env";
 
 const DOMAIN_REGEX = /^[a-z0-9.-]+\.[a-z]{2,}$/i;
 
-const COMPANY_SUFFIXES = [
-  " incorporated",
-  " inc.",
-  " inc",
-  " ltd.",
-  " ltd",
-  " llc",
-  " l.l.c.",
-  " corp.",
-  " corp",
-  " corporation",
-  " gmbh",
-  " ag",
-  " s.a.",
-  " sa",
-  " b.v.",
-  " bv",
-  " co.",
-  " co",
-  " company",
-];
-
 function normalizeDomain(input: string): string | null {
   try {
     const withScheme = /^https?:\/\//i.test(input) ? input : `https://${input}`;
@@ -33,19 +11,6 @@ function normalizeDomain(input: string): string | null {
   } catch {
     return null;
   }
-}
-
-function slugifyCompany(company: string): string | null {
-  let name = company.toLowerCase().trim();
-  for (const suffix of COMPANY_SUFFIXES) {
-    if (name.endsWith(suffix)) {
-      name = name.slice(0, -suffix.length).trim();
-      break;
-    }
-  }
-  const slug = name.replace(/[^a-z0-9]/g, "");
-  if (slug.length < 3) return null;
-  return `${slug}.com`;
 }
 
 async function brandSearch(company: string): Promise<string | null> {
@@ -81,5 +46,5 @@ export async function resolveCompanyDomain(
   const fromSearch = await brandSearch(company);
   if (fromSearch) return fromSearch;
 
-  return slugifyCompany(company);
+  return null;
 }

@@ -125,23 +125,21 @@ export class DocumentVersionService {
 
     return this.db.$transaction(async (tx) => {
       // Snapshot current state before restoring
-      if (doc.source || doc.yamlContent) {
-        const latest = await tx.documentVersion.findFirst({
-          where: { documentId: doc.id },
-          orderBy: { version: "desc" },
-          select: { version: true },
-        });
-        await tx.documentVersion.create({
-          data: {
-            documentId: doc.id,
-            version: (latest?.version ?? 0) + 1,
-            source: doc.source,
-            yamlContent: doc.yamlContent,
-            trigger: "RESTORE",
-            label: `Before restoring to version ${version.version}`,
-          },
-        });
-      }
+      const latest = await tx.documentVersion.findFirst({
+        where: { documentId: doc.id },
+        orderBy: { version: "desc" },
+        select: { version: true },
+      });
+      await tx.documentVersion.create({
+        data: {
+          documentId: doc.id,
+          version: (latest?.version ?? 0) + 1,
+          source: doc.source,
+          yamlContent: doc.yamlContent,
+          trigger: "RESTORE",
+          label: `Before restoring to version ${version.version}`,
+        },
+      });
 
       // Update document to restored content
       return tx.document.update({

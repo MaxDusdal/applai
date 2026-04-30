@@ -18,12 +18,15 @@ export function SaveVersionDialog({
   documentId,
   open,
   onOpenChange,
+  beforeSave,
 }: {
   documentId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  beforeSave?: () => Promise<void>;
 }) {
   const [label, setLabel] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const utils = api.useUtils();
 
@@ -34,6 +37,21 @@ export function SaveVersionDialog({
       void utils.document.listVersions.invalidate({ documentId });
     },
   });
+
+  const handleSave = async () => {
+    if (isSaving) return;
+
+    setIsSaving(true);
+    try {
+      await beforeSave?.();
+      await mutation.mutateAsync({
+        documentId,
+        label: label.trim() || undefined,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <Dialog
@@ -53,13 +71,12 @@ export function SaveVersionDialog({
         <Input
           placeholder="Version label (optional)"
           value={label}
+          disabled={isSaving || mutation.isPending}
           onChange={(e) => setLabel(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              mutation.mutate({
-                documentId,
-                label: label.trim() || undefined,
-              });
+              e.preventDefault();
+              void handleSave();
             }
           }}
           autoFocus
@@ -69,16 +86,11 @@ export function SaveVersionDialog({
             Cancel
           </Button>
           <Button
-            onClick={() =>
-              mutation.mutate({
-                documentId,
-                label: label.trim() || undefined,
-              })
-            }
-            disabled={mutation.isPending}
+            onClick={() => void handleSave()}
+            disabled={isSaving || mutation.isPending}
           >
             <Save className="mr-1 h-4 w-4" />
-            {mutation.isPending ? "Saving..." : "Save"}
+            {isSaving || mutation.isPending ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -58,15 +58,18 @@ export function VersionHistorySheet({
   documentId,
   open,
   onOpenChange,
+  beforeRestore,
 }: {
   documentId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  beforeRestore?: () => Promise<void>;
 }) {
   const [restoreTarget, setRestoreTarget] = useState<{
     id: string;
     version: number;
   } | null>(null);
+  const [isRestoring, setIsRestoring] = useState(false);
 
   const utils = api.useUtils();
 
@@ -82,6 +85,18 @@ export function VersionHistorySheet({
       void utils.document.listVersions.invalidate({ documentId });
     },
   });
+
+  const handleRestore = async () => {
+    if (!restoreTarget || isRestoring) return;
+
+    setIsRestoring(true);
+    try {
+      await beforeRestore?.();
+      await restoreMutation.mutateAsync({ versionId: restoreTarget.id });
+    } finally {
+      setIsRestoring(false);
+    }
+  };
 
   return (
     <>
@@ -141,6 +156,7 @@ export function VersionHistorySheet({
                           variant="ghost"
                           size="sm"
                           className="shrink-0"
+                          disabled={isRestoring}
                           onClick={() =>
                             setRestoreTarget({ id: v.id, version: v.version })
                           }
@@ -175,15 +191,13 @@ export function VersionHistorySheet({
               Cancel
             </Button>
             <Button
-              onClick={() => {
-                if (restoreTarget) {
-                  restoreMutation.mutate({ versionId: restoreTarget.id });
-                }
-              }}
-              disabled={restoreMutation.isPending}
+              onClick={() => void handleRestore()}
+              disabled={isRestoring || restoreMutation.isPending}
             >
               <Play className="mr-1 h-4 w-4" />
-              {restoreMutation.isPending ? "Restoring..." : "Restore"}
+              {isRestoring || restoreMutation.isPending
+                ? "Restoring..."
+                : "Restore"}
             </Button>
           </DialogFooter>
         </DialogContent>
